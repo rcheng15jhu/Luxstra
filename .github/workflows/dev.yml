@@ -34,7 +34,7 @@ jobs:
           git config user.email "runner@github.com";
           git config user.name "Runner";
           git add -f ./src/main/resources/*;
-          git add -f ./server-1.0-SNAPSHOT.jar;
+          git add -f ./Luxstra-1.0-SNAPSHOT.jar;
           git commit -m "None"
       - name: Deploy to Heroku
         run: git push -f origin HEAD:dev-deploy
