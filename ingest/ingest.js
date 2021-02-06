@@ -13,9 +13,8 @@ async function getObjs() {
     let promises = []
     let result = []
 
-    for (let j = 1; j <= 10; j++) {
-        for (let i = 50 * (j - 1); i < 50 * j; i++) {
-        const feature = data.features[i]
+    for (let j = 0; j < 500; j++) {
+        const feature = data.features[j]
         const coords = feature.geometry.coordinates
         promises.push(
             limit(() => client
@@ -53,9 +52,7 @@ async function getObjs() {
                 .catch((e) => {
                     console.log(e.response.data.error_message);
                 })
-        ))
-        }
-        await Promise.all(promises)
+            ))
     }
     await Promise.all(promises)
     return result
