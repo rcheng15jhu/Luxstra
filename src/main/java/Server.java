@@ -51,7 +51,6 @@ public class Server {
 //
 //    return props;
 //  }
-  //test
 
   final static int PORT_NUM = 7000;
   private static int getHerokuAssignedPort() {
