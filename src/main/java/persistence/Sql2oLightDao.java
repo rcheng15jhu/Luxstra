@@ -28,6 +28,16 @@ public class Sql2oLightDao implements LightDao {
   }
 
   @Override
+  public List<Light> listFromStreetName(String street) throws DaoException {
+    return Transaction.execute(sql20, (con) -> {
+      String sql = "SELECT * FROM Lights WHERE street = :street";
+      return con.createQuery(sql)
+        .addParameter("street", street)
+        .executeAndFetch(Light.class);
+    });
+  }
+
+  @Override
   public boolean delete(Light l) throws DaoException {
     throw new UnsupportedOperationException();
   }
