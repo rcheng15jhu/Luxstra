@@ -62,8 +62,11 @@ function App(props) {
   const classes = useStyles();
 
   const [currentLocale, setLocale] = React.useState("Baltimore");
+  const [currentMarkerMode, setCurrentMarkerMode] = React.useState("Origin")
   const [origin, setOrigin] = React.useState("");
   const [destination, setDestination] = React.useState("");
+  const [originMarkerPos, setOriginMarkerPos] = React.useState(null);
+  const [destinationMarkerPos, setDestinationMarkerPos] = React.useState(null);
 
   const updateLocale = (event) => {
     setLocale(event.target.value);
@@ -74,8 +77,25 @@ function App(props) {
   };
 
   const updateDestination = (event) => {
-    setOrigin(event.target.value);
+    setDestination(event.target.value);
   };
+
+  const updateCurrentMarkerMode = (event) => {
+    console.log(event.target.value)
+    setCurrentMarkerMode(event.target.value)
+  }
+
+  const handleMarkerOnClick = (t, map, coord) => {
+    const { latLng } = coord;
+    const latlng = { lat: latLng.lat(), lng: latLng.lng() }
+    if (currentMarkerMode === "Origin") {
+      setOriginMarkerPos(latlng)
+      setOrigin(latlng.lat, latlng.lng)
+    } else {
+      setDestinationMarkerPos(latlng)
+      setDestination(latlng.lat, latlng.lng)
+    }
+  }
 
   return (
     <div className={classes.backgroundDiv}>
@@ -100,21 +120,28 @@ function App(props) {
         <Card className={classes.map} elevation={1}>
           <Map
             google={props.google}
-            onClick={(t, map, coord) => {
-              const { latLng } = coord;
-              const lat = latLng.lat();
-              const lng = latLng.lng();
-            }}
-          />
+            onClick={handleMarkerOnClick}
+          >
+            {originMarkerPos === null ? null :
+              <Marker
+                position={originMarkerPos}
+              />
+            }
+            {destinationMarkerPos === null ? null :
+              <Marker
+                position={destinationMarkerPos}
+              />
+            }
+          </Map>
         </Card>
         <Paper className={classes.markerModeBox} elevation={1}>
           <FormControl>
-              <InputLabel id="Select">Select</InputLabel>
-              <Select value={""} onChange={() => {}}>
-                <MenuItem value={"Origin"}>Origin</MenuItem>
-                <MenuItem value={"Destination"}>Destination</MenuItem>
-              </Select>
-            </FormControl>
+            <InputLabel id="Select">Select</InputLabel>
+            <Select value={currentMarkerMode} onChange={updateCurrentMarkerMode}>
+              <MenuItem value={"Origin"}>Origin</MenuItem>
+              <MenuItem value={"Destination"}>Destination</MenuItem>
+            </Select>
+          </FormControl>
         </Paper>
       </Paper>
     </div>
