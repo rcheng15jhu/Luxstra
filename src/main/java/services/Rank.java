@@ -9,9 +9,9 @@ public class Rank {
     //Output proportions of light where the resultant circle intersects the lines.
     public static Double[] intersectTimes(LatLng end1, LatLng end2, LatLng lamp, double r)
     {
-        double a = ((end2.latitude-end1.latitude)*(end2.latitude-end1.latitude)+(end2.longitude-end1.longitude)*(end2.longitude-end1.longitude));
-        double b = ((end1.latitude-lamp.latitude)*(end2.latitude-end1.latitude)+(end1.longitude-lamp.longitude)*(end2.longitude-end1.longitude));
-        double c = ((end1.latitude-lamp.latitude)*(end1.latitude-lamp.latitude)+(end1.longitude-lamp.longitude)*(end1.longitude-lamp.longitude)-r*r);
+        double a = ((end2.lat -end1.lat)*(end2.lat -end1.lat)+(end2.lng -end1.lng)*(end2.lng -end1.lng));
+        double b = ((end1.lat -lamp.lat)*(end2.lat -end1.lat)+(end1.lng -lamp.lng)*(end2.lng -end1.lng));
+        double c = ((end1.lat -lamp.lat)*(end1.lat -lamp.lat)+(end1.lng -lamp.lng)*(end1.lng -lamp.lng)-r*r);
         double discriminant = b * b - a * c;
         double root = Math.sqrt(discriminant);
 
@@ -31,8 +31,8 @@ public class Rank {
         LatLng[] ints = new LatLng[2];
         for(int i = 0; i < 2; i++)
         {
-            ints[i] = new LatLng(end1.latitude + (end2.latitude - end1.latitude) * times[i],
-                    end1.longitude + (end2.longitude - end1.longitude) * times[i]);
+            ints[i] = new LatLng(end1.lat + (end2.lat - end1.lat) * times[i],
+                    end1.lng + (end2.lng - end1.lng) * times[i]);
         }
         return ints;
     }

@@ -212,11 +212,17 @@ public class Server {
       DirectionsRoute[] respRoutes = directionsResult.routes;
 
 
-      List<Route> routesToAnalyse = Arrays.stream(respRoutes)
-              .map(route -> new Route(route.summary, route.overviewPolyline.decodePath()))
-              .collect(Collectors.toList());
+      ManyRoutes routesToAnalyse = new ManyRoutes(Arrays.stream(respRoutes)
+              .map(route -> new Route(
+                      route.summary,
+                      route.overviewPolyline.decodePath(),
+                      Arrays.stream(route.legs)
+                              .flatMap(leg -> Arrays.stream(leg.steps)
+                                      .map(step -> step.htmlInstructions)
+                              ).collect(Collectors.toList())))
+              .collect(Collectors.toList()));
 
-      for(Route route : routesToAnalyse) {
+      for(Route route : routesToAnalyse.getRoutes()) {
         List<Light> lightsToWorkWith = lights.parallelStream().filter(light -> {
           light.segment = PolyUtil.locationIndexOnPath(light.getLatLng(), route.getOverviewPolyline(), true, 4);//4 meters
           return light.segment != -1;
@@ -260,9 +266,13 @@ public class Server {
           }
           lightProportions.add(proportion);
         }
+
+        route.setSegmentLightCoverages(segmentLightCoverages);
+        route.setLightProportions(lightProportions);
+
       }
       
-      return null;
+      return new Gson().toJson(routesToAnalyse);
     });
 
 

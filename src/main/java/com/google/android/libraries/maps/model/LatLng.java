@@ -6,17 +6,17 @@
 package com.google.android.libraries.maps.model;
 
 public final class LatLng{
-  public final double latitude;
-  public final double longitude;
+  public final double lat;
+  public final double lng;
 
   public LatLng(double var1, double var3) {
     if (-180.0D <= var3 && var3 < 180.0D) {
-      this.longitude = var3;
+      this.lng = var3;
     } else {
-      this.longitude = ((var3 - 180.0D) % 360.0D + 360.0D) % 360.0D - 180.0D;
+      this.lng = ((var3 - 180.0D) % 360.0D + 360.0D) % 360.0D - 180.0D;
     }
 
-    this.latitude = Math.max(-90.0D, Math.min(90.0D, var1));
+    this.lat = Math.max(-90.0D, Math.min(90.0D, var1));
   }
 
   public final int describeContents() {
@@ -24,9 +24,9 @@ public final class LatLng{
   }
 
   public final int hashCode() {
-    long var2 = Double.doubleToLongBits(this.latitude);
+    long var2 = Double.doubleToLongBits(this.lat);
     int var1 = 31 + (int)(var2 ^ var2 >>> 32);
-    var2 = Double.doubleToLongBits(this.longitude);
+    var2 = Double.doubleToLongBits(this.lng);
     return 31 * var1 + (int)(var2 ^ var2 >>> 32);
   }
 
@@ -37,13 +37,13 @@ public final class LatLng{
       return false;
     } else {
       LatLng var2 = (LatLng)var1;
-      return Double.doubleToLongBits(this.latitude) == Double.doubleToLongBits(var2.latitude) && Double.doubleToLongBits(this.longitude) == Double.doubleToLongBits(var2.longitude);
+      return Double.doubleToLongBits(this.lat) == Double.doubleToLongBits(var2.lat) && Double.doubleToLongBits(this.lng) == Double.doubleToLongBits(var2.lng);
     }
   }
 
   public final String toString() {
-    double var1 = this.latitude;
-    double var3 = this.longitude;
+    double var1 = this.lat;
+    double var3 = this.lng;
     return (new StringBuilder(60)).append("lat/lng: (").append(var1).append(",").append(var3).append(")").toString();
   }
 }
