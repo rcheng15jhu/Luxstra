@@ -227,7 +227,7 @@ public class Server {
                 //.peek(System.out::println)
                 .collect(Collectors.toList());
 
-        
+
       }
 
 
