@@ -149,6 +149,23 @@ function App(props) {
       })
   };
 
+  const getDirectionsFromMarkers =() => {
+    const origin = originMarkerPos.lat + ',' + originMarkerPos.lng
+    const destination = destinationMarkerPos.lat + ',' + destinationMarkerPos.lng
+    fetch('/api/fetch_route_directions?start=' + origin + '&end=' + destination)
+    .then(response => response.json())
+    .then(data => {
+      let temp = []
+      let temp1 = []
+      for (let i = 0; i < data.routes.length; i++) {
+        temp.push(<Polyline path={data.routes[i].overviewPolyline} strokeColor={colors[i]} key={colors[i]} />);
+        temp1.push({ color: colors[i], directions: data.routes[i].HTMLDirections, summary: data.routes[i].summary })
+      }
+      setParsedLines(temp);
+      setDetails(temp1)
+    })
+  }
+
   const renderRouteSelector = () => {
     if (parsedLines === null || details === null) {
       return null
@@ -169,10 +186,11 @@ function App(props) {
     if (details === null || selected === null) {
       return null
     } else {
-      const directions = details.filter(direction => direction.color === selected)[0].directions.map(direction => <li dangerouslySetInnerHTML={{ __html: direction }}></li>)
+      const directions = details.filter(direction => direction.color === selected)[0].directions.map(direction => <li key={direction} dangerouslySetInnerHTML={{ __html: direction }}></li>)
       return (
         <Paper className={classes.detailsBox} elevation={1}>
           {renderRouteSelector()}
+          <ul>{directions}</ul>
           <div dangerouslySetInnerHTML={{ __html: details.filter(direction => direction.color === selected)[0].summary }} />
           <ul className={classes.directions}>{directions}</ul>
         </Paper>
@@ -217,7 +235,7 @@ function App(props) {
             <MenuItem value={"Destination"}>Destination</MenuItem>
           </Select>
         </FormControl>
-        <Button className={classes.routeButton} variant="contained">Create Routes</Button>
+        <Button className={classes.routeButton} onClick={getDirectionsFromMarkers} variant="contained">Create Routes</Button>
       </Box>
       <Box className={classes.selectionBox} elevation={1} boxShadow={2}>
         <FormControl>
