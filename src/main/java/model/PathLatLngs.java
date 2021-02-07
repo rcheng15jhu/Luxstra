@@ -5,9 +5,9 @@ import com.google.maps.model.LatLng;
 import java.util.List;
 
 public class PathLatLngs {
-  Object[] coords;
+  LatLng[] coords;
 
-  public PathLatLngs(Object[] coords) {
+  public PathLatLngs(LatLng[] coords) {
     this.coords = coords;
   }
 }
