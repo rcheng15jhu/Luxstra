@@ -147,7 +147,12 @@ function App(props) {
     let temp = [];
     let temp1 = [];
     for (let i = 0; i < data.routes.length; i++) {
-      temp.push(<Polyline path={data.routes[i].overviewPolyline} strokeColor={colors[i]} key={colors[i]} />);
+      const newOverviewPolyline = data.routes[i].overviewPolyline.map(prevlatlng => (
+      {
+            lat: prevlatlng.latitude,
+            lng: prevlatlng.longitude
+      }))
+      temp.push(<Polyline path={newOverviewPolyline} strokeColor={colors[i]} key={colors[i]} />);
       temp1.push({ color: colors[i], directions: data.routes[i].HTMLDirections, summary: data.routes[i].summary })
     }
     setParsedLines(temp);
