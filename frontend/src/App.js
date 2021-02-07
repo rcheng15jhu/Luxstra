@@ -51,7 +51,7 @@ const useStyles = makeStyles((theme) => ({
   },
   logoImage: {
     display: 'block',
-    marginLeft: '38%',
+    marginLeft: '39%',
     width: '50%',
     paddingTop: '100px',
   },
