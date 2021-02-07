@@ -48,9 +48,7 @@ function App(props) {
   const [origin, setOrigin] = React.useState("");
   const [destination, setDestination] = React.useState("");
 
-  const [genText, setGenText] = React.useState("Generate route");
-
-  const parsedLines = [];
+  const [parsedLines, setParsedLines] = React.useState(null);
 
   const updateLocale = (event) => {
     setLocale(event.target.value);
@@ -62,20 +60,19 @@ function App(props) {
 
   const updateDestination = (event) => {
     setDestination(event.target.value);
-  }; 
+  };
 
-  const getRoute = (start, end) => {
-    fetch('/api/fetch_route_coords?start=' + origin.normalize().replace(/ /g,"+") + '&end=' + destination.normalize().replace(/ /g,"+")).then(
-      response => {return response.json();}
-    ).then(
-      data => {
-        for(let i = 0; i < data.coords.length; i++)
-        {
-          parsedLines.push(<Polyline path={data.coords[i].flat(2)} strokeColor="#000000"/>);
+  const getRoute = () => {
+    fetch('/api/fetch_route_coords?start=' + origin.normalize().replace(/ /g, "+") + '&end=' + destination.normalize().replace(/ /g, "+"))
+      .then(response => response.json())
+      .then(data => {
+          let temp = []
+          for (let i = 0; i < data.coords.length; i++) {
+            temp.push(<Polyline path={data.coords[i].flat(2)} strokeColor="#000000" key={data.coords[i].flat(2)} />);
+          }
+          setParsedLines(temp);
         }
-        setGenText("Regenerate route");
-      }
-    )
+      )
   };
 
   return (
@@ -96,10 +93,10 @@ function App(props) {
           <form id="destination" value={destination} onChange={updateDestination}>
             <TextField label="Destination" />
           </form>
-          <Button variant="contained" onClick={getRoute}>{genText}</Button>
+          <Button variant="contained" onClick={getRoute}>Generate route</Button>
         </Paper>
         <Card className={classes.map} elevation={1}>
-	      <Map google={props.google} initialCenter={{lat: 39.289, lng: -76.612}} id="map">
+          <Map google={props.google} initialCenter={{ lat: 39.289, lng: -76.612 }} id="map">
             {parsedLines}
           </Map>
         </Card>
