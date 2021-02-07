@@ -60,7 +60,7 @@ function App(props) {
     setDestination(event.target.value);
   }; 
 
-  const getRoute = (start, end) => {
+  const getRoute = () => {
     fetch('/api/fetch_route_coords?start=' + origin.normalize().replace(/ /g,"+") + '&end=' + destination.normalize().replace(/ /g,"+")).then(
       response => {return response.json()}
     ).then(data => {
@@ -69,8 +69,17 @@ function App(props) {
     })
   };
 
-  const getDirections = (start, end) => {
+  const getDirections = () => {
     fetch('/api/fetch_route_directions?start=' + origin.normalize().replace(/ /g,"+") + '&end=' + destination.normalize().replace(/ /g,"+")).then(
+        response => {return response.json()}
+    ).then(data => {
+      console.log(JSON.stringify(data));
+      //document.getElementById("mapLine").path = {data};
+    })
+  };
+
+  const getAnalysis = () => {
+    fetch('/api/analyse_paths?start=' + origin.normalize().replace(/ /g,"+") + '&end=' + destination.normalize().replace(/ /g,"+")).then(
         response => {return response.json()}
     ).then(data => {
       console.log(JSON.stringify(data));
@@ -97,7 +106,7 @@ function App(props) {
             <TextField label="Destination" />
           </form>
           <Button variant="contained" onClick={getRoute}>Create Routes</Button>
-          <Button variant="contained" onClick={getDirections}>Create Routes</Button>
+          <Button variant="contained" onClick={getAnalysis}>Create Routes</Button>
         </Paper>
         <Card className={classes.map} elevation={1}>
 	  <Map google={props.google} initialCenter={{lat: 39.289, lng: -76.612}} id="map">

@@ -5,7 +5,7 @@ import com.google.maps.DirectionsApi;
 import com.google.maps.GeoApiContext;
 import com.google.maps.model.DirectionsResult;
 import com.google.maps.model.DirectionsRoute;
-import com.google.maps.model.LatLng;
+import com.google.maps.android.PolyUtil;
 import com.google.maps.model.TravelMode;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -21,6 +21,7 @@ import spark.utils.IOUtils;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
@@ -32,6 +33,8 @@ public class Server {
   private static Sql2o sql2o;
 
   private static GeoApiContext context;
+
+  private static List<Light> lights;
 
   private static Sql2o getSql2o() {
     if(sql2o == null) {
@@ -93,6 +96,10 @@ public class Server {
     return context;
   }
 
+  public static void getLights() {
+    lights = new Sql2oLightDao(getSql2o()).listAll();
+  }
+
   public static void main(String[] args) {
     // set port number
     port(getHerokuAssignedPort());
@@ -100,6 +107,8 @@ public class Server {
     getSql2o();
 
     getGeoAPIContext();
+
+    getLights();
 
     staticFiles.location("/");
 
@@ -208,14 +217,25 @@ public class Server {
               .map(route -> new Route(route.summary, route.overviewPolyline.decodePath()))
               .collect(Collectors.toList());
 
+      for(Route route : routesToAnalyse) {
+        List<Light> lightsToWorkWith = lights.parallelStream()
+                .filter(light -> {
+                  light.segment = PolyUtil.locationIndexOnPath(light.getLatLng(), route.getOverviewPolyline(), true, 4);
+                  return light.segment != -1;
+                })
+                .sorted(Comparator.comparingInt(light -> light.segment))
+                //.peek(System.out::println)
+                .collect(Collectors.toList());
 
+        
+      }
 
 
       return null;
     });
 
 
-    List<Light> l = new Sql2oLightDao(getSql2o()).listAll();
+
 
 
 //    try {

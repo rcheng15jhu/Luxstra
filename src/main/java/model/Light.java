@@ -1,5 +1,8 @@
 package model;
 
+import com.google.android.*;
+import com.google.android.libraries.maps.model.LatLng;
+
 import java.math.BigDecimal;
 
 public class Light {
@@ -8,6 +11,7 @@ public class Light {
   BigDecimal lng;
   String street;
   String street_number;
+  public int segment;
 
   public int getId() {
     return id;
@@ -21,31 +25,30 @@ public class Light {
     return lat;
   }
 
-  public void setLat(BigDecimal lat) {
-    this.lat = lat;
-  }
-
   public BigDecimal getLng() {
     return lng;
   }
 
-  public void setLng(BigDecimal lng) {
-    this.lng = lng;
+  public LatLng getLatLng() {
+    return new LatLng(lat.doubleValue(), lng.doubleValue());
   }
 
   public String getStreet() {
     return street;
   }
 
-  public void setStreet(String street) {
-    this.street = street;
-  }
-
   public String getStreet_number() {
     return street_number;
   }
 
-  public void setStreet_number(String street_number) {
-    this.street_number = street_number;
+  @Override
+  public String toString() {
+    return "Light{" +
+            "lat=" + lat +
+            ", lng=" + lng +
+            ", street='" + street + '\'' +
+            ", street_number='" + street_number + '\'' +
+            ", segment=" + segment +
+            '}';
   }
 }
