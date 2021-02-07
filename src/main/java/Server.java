@@ -11,6 +11,10 @@ import com.google.maps.model.TravelMode;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import io.github.cdimascio.dotenv.Dotenv;
+import model.LightJSON;
+import model.PathLatLngs;
+import model.RouteDirections;
+import model.Routes;
 import org.sql2o.Sql2o;
 import org.sql2o.Sql2oException;
 import org.sql2o.quirks.PostgresQuirks;
@@ -29,6 +33,8 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import java.util.stream.Collectors;
+
 import static model.SqlSchema.*;
 
 public class Server {
@@ -143,7 +149,7 @@ public class Server {
       return results;
     });
 
-    get("/api/fetch_route", (req, res) -> {
+    get("/api/fetch_route_coords", (req, res) -> {
       res.status(200);
       res.type("application/json");
 
@@ -159,15 +165,46 @@ public class Server {
       System.out.println(routes.length);
 
 
-      String latLngs = new Gson().toJson(Arrays.stream(routes)
+      String latLngs = new Gson().toJson(new PathLatLngs(Arrays.stream(routes)
               .map(route -> Arrays.stream(route.legs)
                     .map(leg -> Arrays.stream(leg.steps)
                           .map(step -> step.polyline.decodePath())
-                          .toArray()
-                    ).toArray()
-              ).toArray());
+                          .collect(Collectors.toList())
+                    ).collect(Collectors.toList())
+              ).collect(Collectors.toList())));
 
       return latLngs;
+    });
+
+    get("/api/fetch_route_directions", (req, res) -> {
+      res.status(200);
+      res.type("application/json");
+
+      String start = req.queryParams("start");
+      String end = req.queryParams("end");
+
+      DirectionsResult directionsResult = DirectionsApi.getDirections(getGeoAPIContext(), start, end)
+              .alternatives(true)
+              .mode(TravelMode.WALKING)
+              .await();
+      DirectionsRoute[] routes = directionsResult.routes;
+
+      System.out.println(routes.length);
+
+
+      String directions = new Gson().toJson(new Routes(Arrays.stream(routes)
+              .map(route -> new RouteDirections(
+                      route.summary,
+                      route.overviewPolyline.decodePath(),
+                      Arrays.stream(route.legs)
+                            .flatMap(leg -> Arrays.stream(leg.steps)
+                                    .map(step -> step.htmlInstructions)
+                            ).collect(Collectors.toList())
+                )
+              ).collect(Collectors.toList())
+      ));
+
+      return directions;
     });
 
 //    try {

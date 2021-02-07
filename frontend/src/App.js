@@ -2,8 +2,8 @@ import React, { useEffect } from "react";
 
 import { Button, Box, Card, CardMedia, FormControl, InputLabel, List, MenuItem, Paper, Select, TextField, Typography } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
-import { Map, Marker, GoogleApiWrapper } from "google-maps-react";
 import logo from './resources/logo.PNG'
+import { GoogleApiWrapper, Map, Marker, Polyline } from "google-maps-react";
 
 const useStyles = makeStyles((theme) => ({
   backgroundDiv: {
@@ -59,6 +59,8 @@ const useStyles = makeStyles((theme) => ({
 
 }));
 
+const colors = ['blue', 'red', 'green', 'orange', 'yellow']
+
 function App(props) {
   const classes = useStyles();
 
@@ -68,6 +70,11 @@ function App(props) {
   const [destination, setDestination] = React.useState("");
   const [originMarkerPos, setOriginMarkerPos] = React.useState(null);
   const [destinationMarkerPos, setDestinationMarkerPos] = React.useState(null);
+
+  const [parsedLines, setParsedLines] = React.useState(null);
+  const [details, setDetails] = React.useState(null);
+
+  const [selected, setSelected] = React.useState(colors[0])
 
   const updateLocale = (event) => {
     setLocale(event.target.value);
@@ -93,60 +100,112 @@ function App(props) {
       setOriginMarkerPos(latlng)
     } else {
       setDestinationMarkerPos(latlng)
+    };
+  }
+
+  const updateSelected = (event) => {
+    setSelected(event.target.value)
+  }
+
+  const getDirections = () => {
+    fetch('/api/fetch_route_directions?start=' + origin.normalize().replace(/ /g, "+") + '&end=' + destination.normalize().replace(/ /g, "+"))
+      .then(response => response.json())
+      .then(data => {
+        let temp = []
+        let temp1 = []
+        for (let i = 0; i < data.routes.length; i++) {
+          temp.push(<Polyline path={data.routes[i].overviewPolyline} strokeColor={colors[i]} key={colors[i]} />);
+          temp1.push({ color: colors[i], directions: data.routes[i].HTMLDirections, summary: data.routes[i].summary })
+        }
+        setParsedLines(temp);
+        setDetails(temp1)
+      })
+  };
+
+  const renderRouteSelector = () => {
+    if (parsedLines === null || details === null) {
+      return null
+    } else {
+      const colors = details.map(direction => <MenuItem value={direction.color} key={direction.color}>{direction.color}</MenuItem>)
+      return (
+        <FormControl>
+          <InputLabel id="route">Route details</InputLabel>
+          <Select value={selected} onChange={updateSelected}>
+            {colors}
+          </Select>
+        </FormControl>
+      )
+    }
+  }
+
+  const renderRouteDetails = () => {
+    if (details === null || selected === null) {
+      return null
+    } else {
+      return (
+        <div>
+          <div dangerouslySetInnerHTML={{ __html: details.filter(direction => direction.color === selected)[0].directions }} />
+          <div dangerouslySetInnerHTML={{ __html: details.filter(direction => direction.color === selected)[0].summary }} />
+        </div>
+      )
     }
   }
 
   return (
     <div className={classes.backgroundDiv}>
-        <Box className={classes.selectionBox} elevation={1} boxShadow={2}>
-          <FormControl>
-            <InputLabel id="city">City</InputLabel>
-            <Select value={currentLocale} onChange={updateLocale}>
-              <MenuItem value={"Baltimore"}>Baltimore</MenuItem>
-              <MenuItem value={"Boston"}>Boston</MenuItem>
-              <MenuItem value={"WashingtonDC"}>Washington D.C.</MenuItem>
-            </Select>
-          </FormControl>
-          <form value={origin} onChange={updateOrigin}>
-            <TextField id="standard-basic" label="Origin" />
-          </form>
-          <form value={destination} onChange={updateDestination}>
-            <TextField id="standard-basic" label="Destination" />
-          </form>
-          <Button className={classes.routeButton} variant="contained">Create Routes</Button>
-        </Box>
-
       <div className={classes.logoImage}>
-        <img src={logo}/>
+        <img src={logo} />
       </div>
+      <Box className={classes.map} elevation={1} boxShadow={2}>
+        <Map
+          google={props.google}
+          onClick={handleMarkerOnClick}
+          initialCenter={{ lat: 39.289, lng: -76.612 }}
+        >
+          {parsedLines}
+          {originMarkerPos === null ? null :
+            <Marker
+              position={originMarkerPos}
+            />
+          }
+          {destinationMarkerPos === null ? null :
+            <Marker
+              position={destinationMarkerPos}
+            />
+          }
+        </Map>
+      </Box>
+      <Box className={classes.markerModeBox} elevation={1} boxShadow={2}>
+        <FormControl>
+          <InputLabel id="Select">Select</InputLabel>
+          <Select value={currentMarkerMode} onChange={updateCurrentMarkerMode}>
+            <MenuItem value={"Origin"}>Origin</MenuItem>
+            <MenuItem value={"Destination"}>Destination</MenuItem>
+          </Select>
+        </FormControl>
+        <Button className={classes.routeButton} variant="contained">Create Routes</Button>
+      </Box>
+      <Box className={classes.selectionBox} elevation={1} boxShadow={2}>
+        <FormControl>
+          <InputLabel id="city">City</InputLabel>
+          <Select value={currentLocale} onChange={updateLocale}>
+            <MenuItem value={"Baltimore"}>Baltimore</MenuItem>
+            <MenuItem value={"Boston"}>Boston</MenuItem>
+            <MenuItem value={"WashingtonDC"}>Washington D.C.</MenuItem>
+          </Select>
+        </FormControl>
+        <form id="origin" value={origin} onChange={updateOrigin}>
+          <TextField label="Origin" />
+        </form>
+        <form id="destination" value={destination} onChange={updateDestination}>
+          <TextField label="Destination" />
+        </form>
+        <Button className={classes.routeButton} onClick={getDirections} variant="contained">Create Routes</Button>
+      </Box>
 
-        <Box className={classes.map} elevation={1} boxShadow={2}>
-          <Map
-            google={props.google}
-            onClick={handleMarkerOnClick}
-          >
-            {originMarkerPos === null ? null :
-              <Marker
-                position={originMarkerPos}
-              />
-            }
-            {destinationMarkerPos === null ? null :
-              <Marker
-                position={destinationMarkerPos}
-              />
-            }
-          </Map>
-        </Box>
-        <Box className={classes.markerModeBox} elevation={1} boxShadow={2}>
-          <FormControl>
-            <InputLabel id="Select">Select</InputLabel>
-            <Select value={currentMarkerMode} onChange={updateCurrentMarkerMode}>
-              <MenuItem value={"Origin"}>Origin</MenuItem>
-              <MenuItem value={"Destination"}>Destination</MenuItem>
-            </Select>
-          </FormControl>
-          <Button className={classes.routeButton} variant="contained">Create Routes</Button>
-        </Box>
+      {renderRouteSelector()}
+      {renderRouteDetails()}
+
     </div>
   );
 }
