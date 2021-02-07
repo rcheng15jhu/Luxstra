@@ -44,8 +44,8 @@ public class Light {
   @Override
   public String toString() {
     return "Light{" +
-            "lat=" + lat +
-            ", lng=" + lng +
+            "latitude=" + lat +
+            ", longitude=" + lng +
             ", street='" + street + '\'' +
             ", street_number='" + street_number + '\'' +
             ", segment=" + segment +
