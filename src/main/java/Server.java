@@ -6,6 +6,7 @@ import com.google.maps.GeoApiContext;
 import com.google.maps.model.DirectionsResult;
 import com.google.maps.model.DirectionsRoute;
 import com.google.maps.android.PolyUtil;
+import com.google.android.libraries.maps.model.LatLng;
 import com.google.maps.model.TravelMode;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -15,15 +16,13 @@ import org.sql2o.Sql2o;
 import org.sql2o.Sql2oException;
 import org.sql2o.quirks.PostgresQuirks;
 import persistence.Sql2oLightDao;
+import services.Rank;
 import spark.Spark;
 import spark.utils.IOUtils;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static model.SqlSchema.*;
@@ -218,16 +217,29 @@ public class Server {
               .collect(Collectors.toList());
 
       for(Route route : routesToAnalyse) {
-        List<Light> lightsToWorkWith = lights.parallelStream()
-                .filter(light -> {
-                  light.segment = PolyUtil.locationIndexOnPath(light.getLatLng(), route.getOverviewPolyline(), true, 4);
-                  return light.segment != -1;
-                })
-                .sorted(Comparator.comparingInt(light -> light.segment))
-                //.peek(System.out::println)
-                .collect(Collectors.toList());
+        List<Light> lightsToWorkWith = lights.parallelStream().filter(light -> {
+          light.segment = PolyUtil.locationIndexOnPath(light.getLatLng(), route.getOverviewPolyline(), true, 4);
+          return light.segment != -1;
+        }).sorted(Comparator.comparingInt(light -> light.segment))
+        //.peek(System.out::println)
+        .collect(Collectors.toList());
 
-
+        List<LatLng> polyline = route.getOverviewPolyline();
+        int segmentSize = polyline.size() - 1;
+        //make list of light coverages for each segment
+        ArrayList<ArrayList<Double[]>> segmentLightCoverages = new ArrayList<ArrayList<Double[]>>(polyline.size()-1);
+        for(Light light : lightsToWorkWith) {
+          //intersect each line segment in route, with light
+          for(int i = 0; i < segmentSize; i++)
+          {
+            Double[] times = Rank.intersectTimes(polyline.get(i), polyline.get(i+1), light.getLatLng(), 0.05);
+            segmentLightCoverages.get(i).add(times);
+          }
+        }
+        for(int i = 0; i < segmentSize; i++) {
+          ArrayList<Double[]> temp = Rank.pruneRedundant(segmentLightCoverages.get(i));
+          segmentLightCoverages.get(i) = temp;
+        }
       }
 
 
