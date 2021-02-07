@@ -11,7 +11,6 @@ import com.google.maps.model.TravelMode;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import io.github.cdimascio.dotenv.Dotenv;
-import model.LightJSON;
 import org.sql2o.Sql2o;
 import org.sql2o.Sql2oException;
 import org.sql2o.quirks.PostgresQuirks;
@@ -90,9 +89,13 @@ public class Server {
 
   public static GeoApiContext getGeoAPIContext() {
     if(context == null) {
-      Dotenv dotenv = Dotenv.load();
+      String apiKey = System.getenv("API_KEY");
+      if(apiKey == null) {
+        Dotenv dotenv = Dotenv.load();
+        apiKey = dotenv.get("DEV_API_KEY");
+      }
       context = new GeoApiContext.Builder()
-              .apiKey(dotenv.get("DEV_API_KEY"))
+              .apiKey(apiKey)
               .build();
     }
     return context;
