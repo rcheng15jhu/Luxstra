@@ -41,6 +41,8 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+const colors = ['blue', 'red', 'green', 'orange', 'yellow']
+
 function App(props) {
   const classes = useStyles();
 
@@ -49,6 +51,9 @@ function App(props) {
   const [destination, setDestination] = React.useState("");
 
   const [parsedLines, setParsedLines] = React.useState(null);
+  const [directions, setDirections] = React.useState(null);
+
+  const [selected, setSelected] = React.useState(colors[0])
 
   const updateLocale = (event) => {
     setLocale(event.target.value);
@@ -62,31 +67,50 @@ function App(props) {
     setDestination(event.target.value);
   };
 
-  const getRoute = () => {
-    fetch('/api/fetch_route_coords?start=' + origin.normalize().replace(/ /g, "+") + '&end=' + destination.normalize().replace(/ /g, "+"))
-      .then(response => response.json())
-      .then(data => {
-          let temp = []
-          for (let i = 0; i < data.coords.length; i++) {
-            temp.push(<Polyline path={data.coords[i].flat(2)} strokeColor="#000000" key={data.coords[i].flat(2)} />);
-          }
-          setParsedLines(temp);
-        }
-      )
-  };
+  const updateSelected = (event) => {
+    setSelected(event.target.value)
+  }
 
   const getDirections = () => {
-    fetch('/api/fetch_route_directions?start=' + origin.normalize().replace(/ /g,"+") + '&end=' + destination.normalize().replace(/ /g,"+"))
-        .then(response => response.json())
-        .then(data => {
-          const RouteLines = data.routes.map(route =>
-              <Polyline path={route.overviewPolyline} strokeColor="#000000" key={route.overviewPolyline} />
-          )
-          console.log(data.routes);
-          setParsedLines(RouteLines);
+    fetch('/api/fetch_route_directions?start=' + origin.normalize().replace(/ /g, "+") + '&end=' + destination.normalize().replace(/ /g, "+"))
+      .then(response => response.json())
+      .then(data => {
+        let temp = []
+        let temp1 = []
+        for (let i = 0; i < data.routes.length; i++) {
+          temp.push(<Polyline path={data.routes[i].overviewPolyline} strokeColor={colors[i]} key={colors[i]} />);
+          temp1.push({color: colors[i], directions: data.routes[i].HTMLDirections, summary: data.routes[i].summary})
         }
-      )
+        setParsedLines(temp);
+        setDirections(temp1)
+      })
   };
+
+  const renderRouteSelector = () => {
+    if (parsedLines === null || directions === null) {
+      return null
+    } else {
+      const colors = directions.map(direction => <MenuItem value={direction.color} key={direction.color}>{direction.color}</MenuItem>)
+      return (
+        <FormControl>
+          <InputLabel id="route">Route details</InputLabel>
+          <Select value={selected} onChange={updateSelected}>
+            {colors}
+          </Select>
+        </FormControl>
+      )
+    }
+  }
+
+  const renderRouteDetails = () => {
+    if (directions === null || selected === null) {
+      return null
+    } else {
+        return (
+          <div dangerouslySetInnerHTML={{__html: directions.filter(direction => direction.color === selected)[0].directions}} />
+        )
+    }
+  }
 
   return (
     <div className={classes.backgroundDiv}>
@@ -106,13 +130,15 @@ function App(props) {
           <form id="destination" value={destination} onChange={updateDestination}>
             <TextField label="Destination" />
           </form>
-          <Button variant="contained" onClick={getRoute}>Generate route</Button>
+          <Button variant="contained" onClick={getDirections}>Generate route</Button>
         </Paper>
         <Card className={classes.map} elevation={1}>
           <Map google={props.google} initialCenter={{ lat: 39.289, lng: -76.612 }} id="map">
             {parsedLines}
           </Map>
         </Card>
+        {renderRouteSelector()}
+        {renderRouteDetails()}
       </Paper>
     </div>
   );
