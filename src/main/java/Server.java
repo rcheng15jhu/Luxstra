@@ -190,7 +190,7 @@ public class Server {
 
       String directions = new Gson().toJson(new Routes(Arrays.stream(routes)
               .map(route -> new RouteDirections(
-                      route.overviewPolyline.getEncodedPath(),
+                      route.overviewPolyline.decodePath(),
                       Arrays.stream(route.legs)
                             .flatMap(leg -> Arrays.stream(leg.steps)
                                     .map(step -> step.htmlInstructions)
