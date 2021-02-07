@@ -5,16 +5,12 @@ import com.google.maps.DirectionsApi;
 import com.google.maps.GeoApiContext;
 import com.google.maps.model.DirectionsResult;
 import com.google.maps.model.DirectionsRoute;
-import com.google.maps.android.PolyUtil;
 import com.google.maps.model.LatLng;
 import com.google.maps.model.TravelMode;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import io.github.cdimascio.dotenv.Dotenv;
-import model.LightJSON;
-import model.PathLatLngs;
-import model.RouteDirections;
-import model.Routes;
+import model.*;
 import org.sql2o.Sql2o;
 import org.sql2o.Sql2oException;
 import org.sql2o.quirks.PostgresQuirks;
@@ -22,14 +18,8 @@ import persistence.Sql2oLightDao;
 import spark.Spark;
 import spark.utils.IOUtils;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
@@ -185,10 +175,8 @@ public class Server {
               .await();
       DirectionsRoute[] routes = directionsResult.routes;
 
-      System.out.println(routes.length);
 
-
-      String directions = new Gson().toJson(new Routes(Arrays.stream(routes)
+      String directions = new Gson().toJson(new ManyRouteDirections(Arrays.stream(routes)
               .map(route -> new RouteDirections(
                       route.overviewPolyline.getEncodedPath(),
                       Arrays.stream(route.legs)
@@ -201,6 +189,34 @@ public class Server {
 
       return directions;
     });
+
+    get("/api/analyse_paths", (req, res) -> {
+      res.status(200);
+      res.type("application/json");
+
+      String start = req.queryParams("start");
+      String end = req.queryParams("end");
+
+      DirectionsResult directionsResult = DirectionsApi.getDirections(getGeoAPIContext(), start, end)
+              .alternatives(true)
+              .mode(TravelMode.WALKING)
+              .await();
+      DirectionsRoute[] respRoutes = directionsResult.routes;
+
+
+      List<Route> routesToAnalyse = Arrays.stream(respRoutes)
+              .map(route -> new Route(route.summary, route.overviewPolyline.decodePath()))
+              .collect(Collectors.toList());
+
+
+
+
+      return null;
+    });
+
+
+    List<Light> l = new Sql2oLightDao(getSql2o()).listAll();
+
 
 //    try {
 //      Reader reader = new BufferedReader(new InputStreamReader(Spark.class.getResourceAsStream("/out.json")));

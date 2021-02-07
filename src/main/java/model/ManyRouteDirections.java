@@ -2,10 +2,10 @@ package model;
 
 import java.util.List;
 
-public class Routes {
+public class ManyRouteDirections {
   List<RouteDirections> routes;
 
-  public Routes(List<RouteDirections> routes) {
+  public ManyRouteDirections(List<RouteDirections> routes) {
     this.routes = routes;
   }
 }
