@@ -1,56 +1,83 @@
 import static spark.Spark.*;
 
+import com.google.gson.Gson;
+import com.google.maps.DirectionsApi;
+import com.google.maps.GeoApiContext;
+import com.google.maps.model.DirectionsResult;
+import com.google.maps.model.DirectionsRoute;
+import com.google.maps.android.PolyUtil;
+import com.google.maps.model.LatLng;
+import com.google.maps.model.TravelMode;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+import io.github.cdimascio.dotenv.Dotenv;
+import model.LightJSON;
+import org.sql2o.Sql2o;
+import org.sql2o.Sql2oException;
+import org.sql2o.quirks.PostgresQuirks;
+import persistence.Sql2oLightDao;
 import spark.Spark;
 import spark.utils.IOUtils;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
+import static model.SqlSchema.*;
+
 public class Server {
 
-//  private static Sql2o sql2o;
-//
-//  private static Sql2o getSql2o() {
-//    if(sql2o == null) {
-//      // create data source - update to use postgresql
-//      try {
-//        Properties props = getDbUrl(System.getenv("DATABASE_URL"));
-//        sql2o = new Sql2o(new HikariDataSource(new HikariConfig(props)), new PostgresQuirks());
-//        //sql2o = new Sql2o(props.getProperty("jdbcUrl"), props.getProperty("username"), props.getProperty("password"));
-//      } catch(URISyntaxException | Sql2oException e) {
-//        e.printStackTrace();
-//      }
-//
-//      try (org.sql2o.Connection con = sql2o.beginTransaction()) {
-//        con.createQuery(UsersSchema).executeUpdate();
-//        con.createQuery(EventsSchema).executeUpdate();
-//        con.createQuery(CalendarsSchema).executeUpdate();
-//        con.createQuery(ConnectionsSchema).executeUpdate();
-//        con.createQuery(AvailabilitiesSchema).executeUpdate();
-//        con.commit();
-//      } catch (Sql2oException e) {
-//        e.printStackTrace();
-//      }
-//    }
-//
-//    return sql2o;
-//  }
-//
-//  private static Properties getDbUrl(String databaseUrl) throws URISyntaxException {
-//    Properties props = new Properties();
-//    if (databaseUrl == null) {
-//      Dotenv dotenv = Dotenv.load();
-//      props.setProperty("username", dotenv.get("DEV_DB_USER"));
-//      props.setProperty("password", dotenv.get("DEV_DB_PWORD"));
-//      props.setProperty("jdbcUrl",  dotenv.get("DEV_DB_URL"));
-//    } else {
-//      URI dbUri = new URI(databaseUrl);
-//
-//      props.setProperty("username", dbUri.getUserInfo().split(":")[0]);
-//      props.setProperty("password", dbUri.getUserInfo().split(":")[1]);
-//      props.setProperty("jdbcUrl",  "jdbc:postgresql://" + dbUri.getHost() + ':'
-//              + dbUri.getPort() + dbUri.getPath() + "?sslmode=require");
-//    }
-//
-//    return props;
-//  }
+  private static Sql2o sql2o;
+
+  private static GeoApiContext context;
+
+  private static Sql2o getSql2o() {
+    if(sql2o == null) {
+      // create data source - update to use postgresql
+      try {
+        Properties props = getDbUrl(System.getenv("DATABASE_URL"));
+        sql2o = new Sql2o(new HikariDataSource(new HikariConfig(props)), new PostgresQuirks());
+        //sql2o = new Sql2o(props.getProperty("jdbcUrl"), props.getProperty("username"), props.getProperty("password"));
+      } catch(URISyntaxException | Sql2oException e) {
+        e.printStackTrace();
+      }
+
+      try (org.sql2o.Connection con = sql2o.beginTransaction()) {
+        con.createQuery(LightsSchema).executeUpdate();
+        con.commit();
+      } catch (Sql2oException e) {
+        e.printStackTrace();
+      }
+    }
+
+    return sql2o;
+  }
+
+  private static Properties getDbUrl(String databaseUrl) throws URISyntaxException {
+    Properties props = new Properties();
+    if (databaseUrl == null) {
+      Dotenv dotenv = Dotenv.load();
+      props.setProperty("username", dotenv.get("DEV_DB_USER"));
+      props.setProperty("password", dotenv.get("DEV_DB_PWORD"));
+      props.setProperty("jdbcUrl",  dotenv.get("DEV_DB_URL"));
+    } else {
+      URI dbUri = new URI(databaseUrl);
+
+      props.setProperty("username", dbUri.getUserInfo().split(":")[0]);
+      props.setProperty("password", dbUri.getUserInfo().split(":")[1]);
+      props.setProperty("jdbcUrl",  "jdbc:postgresql://" + dbUri.getHost() + ':'
+              + dbUri.getPort() + dbUri.getPath() + "?sslmode=require");
+    }
+
+    return props;
+  }
 
   final static int PORT_NUM = 7000;
   private static int getHerokuAssignedPort() {
@@ -61,11 +88,23 @@ public class Server {
     return PORT_NUM;
   }
 
+  public static GeoApiContext getGeoAPIContext() {
+    if(context == null) {
+      Dotenv dotenv = Dotenv.load();
+      context = new GeoApiContext.Builder()
+              .apiKey(dotenv.get("DEV_API_KEY"))
+              .build();
+    }
+    return context;
+  }
+
   public static void main(String[] args) {
     // set port number
     port(getHerokuAssignedPort());
 
-    //getSql2o();
+    getSql2o();
+
+    getGeoAPIContext();
 
     staticFiles.location("/");
 
@@ -89,6 +128,54 @@ public class Server {
 
       return IOUtils.toString(Spark.class.getResourceAsStream("/index.html"));
     });
+
+    get("/api/lights_from_street", (req, res) -> {
+      res.status(200);
+      res.type("application/json");
+
+      String name = req.queryParams("name");
+
+      String results = new Gson().toJson(new Sql2oLightDao(getSql2o()).listFromStreetName(name));
+
+      return results;
+    });
+
+    get("/api/fetch_route", (req, res) -> {
+      res.status(200);
+      res.type("application/json");
+
+      String start = req.queryParams("start");
+      String end = req.queryParams("end");
+
+      DirectionsResult directionsResult = DirectionsApi.getDirections(getGeoAPIContext(), start, end)
+              .alternatives(true)
+              .mode(TravelMode.WALKING)
+              .await();
+      DirectionsRoute[] routes = directionsResult.routes;
+
+      System.out.println(routes.length);
+
+
+      String latLngs = new Gson().toJson(Arrays.stream(routes)
+              .map(route -> Arrays.stream(route.legs)
+                    .map(leg -> Arrays.stream(leg.steps)
+                          .map(step -> step.polyline.decodePath())
+                          .toArray()
+                    ).toArray()
+              ).toArray());
+
+      return latLngs;
+    });
+
+//    try {
+//      Reader reader = new BufferedReader(new InputStreamReader(Spark.class.getResourceAsStream("/out.json")));
+//
+//      LightJSON lightJSON = new Gson().fromJson(reader, LightJSON.class);
+//
+//      new Sql2oLightDao(getSql2o()).addBatch(lightJSON.getLightStream());
+//    } catch(Exception e) {
+//      e.printStackTrace();
+//    }
   }
 
 }
