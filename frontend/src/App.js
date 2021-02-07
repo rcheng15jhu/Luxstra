@@ -56,6 +56,16 @@ const useStyles = makeStyles((theme) => ({
     width: '50%',
     paddingTop: '100px',
   },
+  detailsBox: {
+    top: '5%',
+    left: '50%',
+    position: 'absolute',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'white',
+  }
 
 }));
 
@@ -129,7 +139,7 @@ function App(props) {
       const colors = details.map(direction => <MenuItem value={direction.color} key={direction.color}>{direction.color}</MenuItem>)
       return (
         <FormControl>
-          <InputLabel id="route">Route details</InputLabel>
+          <InputLabel id="route">Route</InputLabel>
           <Select value={selected} onChange={updateSelected}>
             {colors}
           </Select>
@@ -142,20 +152,27 @@ function App(props) {
     if (details === null || selected === null) {
       return null
     } else {
+      const directions = details.filter(direction => direction.color === selected)[0].directions.map(direction => <li dangerouslySetInnerHTML={{ __html: direction }}></li>)
       return (
-        <div>
-          <div dangerouslySetInnerHTML={{ __html: details.filter(direction => direction.color === selected)[0].directions }} />
+        <Box className={classes.detailsBox} elevation={1} boxShadow={2}>
+          {renderRouteSelector()}
+          <lu>{directions}</lu>
           <div dangerouslySetInnerHTML={{ __html: details.filter(direction => direction.color === selected)[0].summary }} />
-        </div>
+        </Box>
       )
     }
   }
 
   return (
     <div className={classes.backgroundDiv}>
-      <div className={classes.logoImage}>
-        <img src={logo} />
-      </div>
+      {parsedLines === null ?
+        <div className={classes.logoImage}>
+          <img src={logo} />
+        </div>
+        :
+        null
+      }
+
       <Box className={classes.map} elevation={1} boxShadow={2}>
         <Map
           google={props.google}
@@ -203,7 +220,6 @@ function App(props) {
         <Button className={classes.routeButton} onClick={getDirections} variant="contained">Create Routes</Button>
       </Box>
 
-      {renderRouteSelector()}
       {renderRouteDetails()}
 
     </div>
