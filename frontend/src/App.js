@@ -47,7 +47,9 @@ function App(props) {
   const [currentLocale, setLocale] = React.useState("Baltimore");
   const [origin, setOrigin] = React.useState("");
   const [destination, setDestination] = React.useState("");
-  
+
+  const [genText, setGenText] = React.useState("Generate route");
+
   const parsedLines = [];
 
   const updateLocale = (event) => {
@@ -71,6 +73,7 @@ function App(props) {
         {
           parsedLines.push(<Polyline path={data.coords[i].flat(2)} strokeColor="#000000"/>);
         }
+        setGenText("Regenerate route");
       }
     )
   };
@@ -93,10 +96,10 @@ function App(props) {
           <form id="destination" value={destination} onChange={updateDestination}>
             <TextField label="Destination" />
           </form>
-          <Button variant="contained" onClick={getRoute}>Create Routes</Button>
+          <Button variant="contained" onClick={getRoute}>{genText}</Button>
         </Paper>
         <Card className={classes.map} elevation={1}>
-	  <Map google={props.google} initialCenter={{lat: 39.289, lng: -76.612}} id="map">
+	      <Map google={props.google} initialCenter={{lat: 39.289, lng: -76.612}} id="map">
             {parsedLines}
           </Map>
         </Card>
