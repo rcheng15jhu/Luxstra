@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 
 import { Button, Card, CardMedia, FormControl, InputLabel, List, MenuItem, Paper, Select, TextField, Typography } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
-import { Map, Marker, GoogleApiWrapper } from "google-maps-react";
+import { GoogleApiWrapper, Map, Marker, Polyline } from "google-maps-react";
 
 const useStyles = makeStyles((theme) => ({
   backgroundDiv: {
@@ -25,19 +25,12 @@ const useStyles = makeStyles((theme) => ({
     top: '5%',
     left: '5%',
     height: '30%',
-    width: '20%',
+    width: '90%',
     position: 'absolute',
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  directionsBox: {
-    top: '5%',
-    left: '30%',
-    height: '30%',
-    width: '65%',
-    position: 'absolute',
   },
   map: {
     top: '40%',
@@ -68,10 +61,11 @@ function App(props) {
   }; 
 
   const getRoute = (start, end) => {
-    fetch('/api/fetch_route?start=' + origin.normalize().replace(/ /g,"+") + '&end=' + destination.normalize().replace(/ /g,"+")).then(
+    fetch('/api/fetch_route?start=' + origin.normalize().replace(/ /g,"+") + '&destination=' + destination.normalize().replace(/ /g,"+")).then(
       response => {return response.json()}
     ).then(data => {
       console.log(JSON.stringify(data));
+      document.getElementById("mapLine").path = {data};
     })
   };
 
@@ -95,11 +89,10 @@ function App(props) {
           </form>
           <Button variant="contained" onClick={getRoute}>Create Routes</Button>
         </Paper>
-        <Paper className={classes.directionsBox} elevation={1}>
-          <List style={{maxHeight: '100%', overflow: 'auto'}} />
-        </Paper>
         <Card className={classes.map} elevation={1}>
-	  <Map google={props.google} />
+	  <Map google={props.google} initialCenter={{lat: 39.289, lng: -76.612}} id="map">
+            <Polyline id="mapLine" strokeColor="#FFFF00" strokeOpacity={0.8} strokeWeight={2}/>
+          </Map>
         </Card>
       </Paper>
     </div>
