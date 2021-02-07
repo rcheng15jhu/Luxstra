@@ -28,10 +28,10 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: 'white',
   },
   markerModeBox: {
-    top: '15%',
-    left: '85%',
-    height: '10%',
-    width: '10%',
+    top: '12%',
+    left: '83%',
+    height: '20%',
+    width: '12%',
     position: 'absolute',
     display: 'flex',
     flexDirection: 'column',
@@ -48,10 +48,11 @@ const useStyles = makeStyles((theme) => ({
   },
   routeButton: {
     marginTop: '30px',
+    backgroundColor: "lightblue",
   },
   logoImage: {
     display: 'block',
-    marginLeft: '39%',
+    marginLeft: '37.8%',
     width: '50%',
     paddingTop: '100px',
   },
@@ -144,6 +145,7 @@ function App(props) {
               <MenuItem value={"Destination"}>Destination</MenuItem>
             </Select>
           </FormControl>
+          <Button className={classes.routeButton} variant="contained">Create Routes</Button>
         </Box>
     </div>
   );
