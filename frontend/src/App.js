@@ -1,9 +1,8 @@
 import React, { useEffect } from "react";
 
-import { Button, Card, CardMedia, FormControl, InputLabel, List, MenuItem, Paper, Select, TextField, Typography } from "@material-ui/core";
+import { Button, Box, Card, CardMedia, FormControl, InputLabel, List, MenuItem, Paper, Select, TextField, Typography } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 import { Map, Marker, GoogleApiWrapper } from "google-maps-react";
-import background from "./resources/mainBackground3.png";
 
 const useStyles = makeStyles((theme) => ({
   backgroundDiv: {
@@ -12,17 +11,8 @@ const useStyles = makeStyles((theme) => ({
     top: '0px',
     left: '0px',
     position: 'fixed',
-    backgroundImage: `url(${background})`,
-    //backgroundImage: 'linear-gradient(#FF8235, #30E8BF)',
+    backgroundColor: "#FBFBFA",
     backgroundSize: 'cover',
-  },
-  mainBox: {
-    height: '90%',
-    width: '90%',
-    top: '5%',
-    left: '4%',
-    position: 'fixed',
-    backgroundColor: "#e6f2ff",
   },
   selectionBox: {
     top: '5%',
@@ -34,6 +24,7 @@ const useStyles = makeStyles((theme) => ({
     flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: 'white',
   },
   markerModeBox: {
     top: '15%',
@@ -45,6 +36,7 @@ const useStyles = makeStyles((theme) => ({
     flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: 'white',
   },
   map: {
     top: '40%',
@@ -97,8 +89,7 @@ function App(props) {
 
   return (
     <div className={classes.backgroundDiv}>
-      <Paper className={classes.mainBox} elevation={2}>
-        <Paper className={classes.selectionBox} elevation={1}>
+        <Box className={classes.selectionBox} elevation={1} boxShadow={2}>
           <FormControl>
             <InputLabel id="city">City</InputLabel>
             <Select value={currentLocale} onChange={updateLocale}>
@@ -114,8 +105,8 @@ function App(props) {
             <TextField id="standard-basic" label="Destination" />
           </form>
           <Button className={classes.routeButton} variant="contained">Create Routes</Button>
-        </Paper>
-        <Card className={classes.map} elevation={1}>
+        </Box>
+        <Box className={classes.map} elevation={1} boxShadow={2}>
           <Map
             google={props.google}
             onClick={handleMarkerOnClick}
@@ -131,8 +122,8 @@ function App(props) {
               />
             }
           </Map>
-        </Card>
-        <Paper className={classes.markerModeBox} elevation={1}>
+        </Box>
+        <Box className={classes.markerModeBox} elevation={1} boxShadow={2}>
           <FormControl>
             <InputLabel id="Select">Select</InputLabel>
             <Select value={currentMarkerMode} onChange={updateCurrentMarkerMode}>
@@ -140,8 +131,7 @@ function App(props) {
               <MenuItem value={"Destination"}>Destination</MenuItem>
             </Select>
           </FormControl>
-        </Paper>
-      </Paper>
+        </Box>
     </div>
   );
 }
