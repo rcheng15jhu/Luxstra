@@ -12,6 +12,7 @@ public class Route {
   List<String> HTMLDirections;
   List<ArrayList<Double[]>> segmentLightCoverages;
   List<Double> lightProportions;
+  List<Light> allLights;
 
   public Route(String summary, List<LatLng> overviewPolyline, List<String> HTMLDirections) {
     this.summary = summary;
@@ -35,5 +36,9 @@ public class Route {
 
   public void setLightProportions(List<Double> lightProportions) {
     this.lightProportions = lightProportions;
+  }
+
+  public void setAllLights(List<Light> allLights) {
+    this.allLights = allLights;
   }
 }

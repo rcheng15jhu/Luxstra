@@ -101,7 +101,17 @@ function App(props) {
   const [parsedLines, setParsedLines] = React.useState(null);
   const [details, setDetails] = React.useState(null);
 
-  const [selected, setSelected] = React.useState(colors[0])
+  const [selected, setSelected] = React.useState(0);
+  const [lamps, setLamps] = React.useState(null);
+
+  useEffect(() => {
+    console.log('lamps', lamps);
+    if(lamps !== null) {
+      console.log(lamps[selected]);
+    } else {
+      console.log('no lamp');
+    }
+  }, [selected, lamps]);
 
   const updateLocale = (event) => {
     setLocale(event.target.value);
@@ -113,15 +123,6 @@ function App(props) {
 
   const updateDestination = (event) => {
     setDestination(event.target.value);
-  };
-
-  const getAnalysis = () => {
-    fetch('/api/analyse_paths?start=' + origin.normalize().replace(/ /g,"+") + '&end=' + destination.normalize().replace(/ /g,"+")).then(
-        response => {return response.json()}
-    ).then(data => {
-      console.log(JSON.stringify(data));
-      //document.getElementById("mapLine").path = {data};
-    })
   };
 
   const updateCurrentMarkerMode = (event) => {
@@ -136,7 +137,7 @@ function App(props) {
       setOriginMarkerPos(latlng)
     } else {
       setDestinationMarkerPos(latlng)
-    };
+    }
   }
 
   const updateSelected = (event) => {
@@ -146,23 +147,32 @@ function App(props) {
   const injestData = data => {
     let temp = [];
     let temp1 = [];
+    let temp2 = [];
     for (let i = 0; i < data.routes.length; i++) {
       const newOverviewPolyline = data.routes[i].overviewPolyline.map(prevlatlng => (
       {
             lat: prevlatlng.latitude,
             lng: prevlatlng.longitude
-      }))
+      }));
+      const allRouteLamps = data.routes[i].allLights.map(light => (
+      {
+            lat: light.lat,
+            lng: light.lng
+      })).map(coord => <Marker key={coord} position={coord}/>);
       temp.push(<Polyline path={newOverviewPolyline} strokeColor={colors[i]} key={colors[i]} />);
-      temp1.push({ color: colors[i], directions: data.routes[i].HTMLDirections, summary: data.routes[i].summary })
+      temp1.push({ color: colors[i], directions: data.routes[i].HTMLDirections, summary: data.routes[i].summary });
+      temp2.push(allRouteLamps);
     }
     setParsedLines(temp);
-    setDetails(temp1)
+    setDetails(temp1);
+    setLamps(temp2);
+    console.log(temp2);
   };
 
   const getDirections = () => {
-    let promise = fetch('/api/analyse_paths?start=' + origin.normalize().replace(/ /g, "+") + '&end=' + destination.normalize().replace(/ /g, "+"))
-      .then(response => response.json())
-      .then(injestData);
+    fetch('/api/analyse_paths?start=' + origin.normalize().replace(/ /g, "+") + '&end=' + destination.normalize().replace(/ /g, "+"))
+        .then(response => response.json())
+        .then(injestData);
   };
 
   const getDirectionsFromMarkers =() => {
@@ -177,7 +187,7 @@ function App(props) {
     if (parsedLines === null || details === null) {
       return null
     } else {
-      const colors = details.map(direction => <MenuItem value={direction.color} key={direction.color}>{direction.color}</MenuItem>)
+      const colors = details.map((direction, index) => <MenuItem value={index} key={direction.color}>{direction.color}</MenuItem>)
       return (
         <FormControl className={classes.selectRoute}>
           <InputLabel id="route">Route</InputLabel>
@@ -193,11 +203,11 @@ function App(props) {
     if (details === null || selected === null) {
       return null
     } else {
-      const directions = details.filter(direction => direction.color === selected)[0].directions.map(direction => <li key={direction} dangerouslySetInnerHTML={{__html: direction}}/>)
+      const directions = details.filter(direction => direction.color === colors[selected])[0].directions.map(direction => <li key={direction} dangerouslySetInnerHTML={{__html: direction}}/>)
       return (
         <Paper className={classes.detailsBox} elevation={1}>
           {renderRouteSelector()}
-          <div dangerouslySetInnerHTML={{ __html: details.filter(direction => direction.color === selected)[0].summary }} />
+          <div dangerouslySetInnerHTML={{ __html: details.filter(direction => direction.color === colors[selected])[0].summary }} />
           <ul className={classes.directions}>{directions}</ul>
         </Paper>
       )
@@ -230,6 +240,9 @@ function App(props) {
             <Marker
               position={destinationMarkerPos}
             />
+          }
+          {lamps === null ? null :
+            lamps[selected]
           }
         </Map>
       </Box>

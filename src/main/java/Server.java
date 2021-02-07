@@ -274,7 +274,7 @@ public class Server {
 
         route.setSegmentLightCoverages(segmentLightCoverages);
         route.setLightProportions(lightProportions);
-
+        route.setAllLights(lightsToWorkWith);
       }
       
       return new Gson().toJson(routesToAnalyse);
