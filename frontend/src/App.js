@@ -1,7 +1,7 @@
-import React, {useEffect} from "react";
+import React, { useEffect } from "react";
 
-import {Button, Card, CardMedia, FormControl, InputLabel, List, MenuItem, Paper, Select, TextField, Typography} from "@material-ui/core";
-import {makeStyles} from "@material-ui/core/styles";
+import { Button, Card, CardMedia, FormControl, InputLabel, List, MenuItem, Paper, Select, TextField, Typography } from "@material-ui/core";
+import { makeStyles } from "@material-ui/core/styles";
 import { Map, Marker, GoogleApiWrapper } from "google-maps-react";
 
 const useStyles = makeStyles((theme) => ({
@@ -48,7 +48,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function App() {
+function App(props) {
   const classes = useStyles();
 
   const [currentLocale, setLocale] = React.useState("Baltimore");
@@ -91,7 +91,7 @@ function App() {
           <List style={{maxHeight: '100%', overflow: 'auto'}} />
         </Paper>
         <Card className={classes.map} elevation={1}>
-          <CardMedia src="https://www.google.com/maps/embed/v1/place?key=API_KEY&q=Space+Needle,Seattle+WA" />
+            <Map google={props.google} />
         </Card>
       </Paper>
       <Map google={this.props.google} />
@@ -100,5 +100,5 @@ function App() {
 }
 
 export default GoogleApiWrapper({
-  apiKey: ("AIzaSyBA1uVzpiZDnx0iG0qC_ZU1m1CpThmNWf4"),
+  apiKey: ("AIzaSyCXpwuUqoRUw8oXYsHWLLNQDSDjuFlnxLs"),
 })(App);
