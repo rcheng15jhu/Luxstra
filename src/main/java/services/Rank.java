@@ -31,24 +31,24 @@ public class Rank {
         LatLng[] ints = new LatLng[2];
         for(int i = 0; i < 2; i++)
         {
-            ints[i] = new LatLng(end1.latitude + (end2.latitude - end1.latitude) * Double.valueOf(times[i]),
-                    end1.longitude + (end2.longitude - end1.longitude) * Double.valueOf(times[i]));
+            ints[i] = new LatLng(end1.latitude + (end2.latitude - end1.latitude) * times[i],
+                    end1.longitude + (end2.longitude - end1.longitude) * times[i]);
         }
         return ints;
     }
 
     public static ArrayList<Double[]> pruneRedundant(ArrayList<Double[]> input)
     {
-        ArrayList<Double[]> output = new ArrayList<Double[]>(0);
-        for(int i = 0; i < input.size(); i++) {
-            if(input.get(i)[0] > 1 || input.get(i)[1] < 0) {
+        ArrayList<Double[]> output = new ArrayList<>(0);
+        for (Double[] doubles : input) {
+            if (doubles[0] > 1 || doubles[1] < 0) {
                 continue;
             } else {
-                if(input.get(i)[0] < 0) {
-                    input.get(i)[0] = 0.0;
+                if (doubles[0] < 0) {
+                    doubles[0] = 0.0;
                 }
-                if(input.get(i)[1] > 1) {
-                    input.get(i)[1] = 1.0;
+                if (doubles[1] > 1) {
+                    doubles[1] = 1.0;
                 }
             }
 
@@ -56,44 +56,47 @@ public class Rank {
             int leftSideAt = -1;
             int rightSideIsIn = -1;
             int rightSideAt = -1;
-            for(int j = 0; j < output.size(); j++) {
-                if(input.get(i)[0] > output.get(j)[0]) {
-                    if(input.get(i)[0] < output.get(j)[1]) {
+            for (int j = 0; j < output.size(); j++) {
+                if (doubles[0] > output.get(j)[0]) {
+                    if (doubles[0] < output.get(j)[1]) {
                         leftSideIsIn = j;
                     }
                     leftSideAt = j;
                 }
-                if(input.get(i)[1] < output.get(j)[1]) {
-                    if(input.get(i)[1] > output.get(j)[0]) {
+                if (doubles[1] < output.get(j)[1]) {
+                    if (doubles[1] > output.get(j)[0]) {
                         rightSideIsIn = j;
                     }
                     rightSideAt = j;
                 }
             }
 
-            if(leftSideIsIn > -1) {
-                if(rightSideIsIn > -1) {
+            if (leftSideIsIn > -1) {
+                if (rightSideIsIn > -1) {
                     output.get(leftSideIsIn)[1] = output.get(rightSideIsIn)[1];
-                    for(int j = rightSideIsIn; j > leftSideIsIn; j--) {
-                        output.remove(j);
+//                    for (int j = rightSideIsIn; j > leftSideIsIn; j--) {
+//                        output.remove(j);
+//                    }
+                    if (rightSideIsIn >= leftSideIsIn + 1) {
+                        output.subList(leftSideIsIn + 1, rightSideIsIn + 1).clear();
                     }
                 } else {
-                    output.get(leftSideIsIn)[1] = input.get(i)[1];
-                    for(int j = rightSideAt - 1; j > leftSideIsIn; j--) {
-                        output.remove(j);
+                    output.get(leftSideIsIn)[1] = doubles[1];
+                    if (rightSideAt > leftSideIsIn + 1) {
+                        output.subList(leftSideIsIn + 1, rightSideAt).clear();
                     }
                 }
             } else {
-                if(rightSideIsIn > -1) {
-                    output.get(rightSideIsIn)[0] = input.get(i)[0];
-                    for(int j = rightSideIsIn - 1; j > leftSideAt; j--) {
-                        output.remove(j);
+                if (rightSideIsIn > -1) {
+                    output.get(rightSideIsIn)[0] = doubles[0];
+                    if (rightSideIsIn > leftSideAt + 1) {
+                        output.subList(leftSideAt + 1, rightSideIsIn).clear();
                     }
                 } else {
-                    for(int j = rightSideAt; j > leftSideAt; j--) {
-                        output.remove(j);
+                    if (rightSideAt >= leftSideAt + 1) {
+                        output.subList(leftSideAt + 1, rightSideAt + 1).clear();
                     }
-                    Double[] temp = {input.get(i)[0], input.get(i)[1]};
+                    Double[] temp = {doubles[0], doubles[1]};
                     output.add(leftSideAt + 1, temp);
                 }
             }

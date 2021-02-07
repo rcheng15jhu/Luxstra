@@ -218,7 +218,7 @@ public class Server {
 
       for(Route route : routesToAnalyse) {
         List<Light> lightsToWorkWith = lights.parallelStream().filter(light -> {
-          light.segment = PolyUtil.locationIndexOnPath(light.getLatLng(), route.getOverviewPolyline(), true, 4);
+          light.segment = PolyUtil.locationIndexOnPath(light.getLatLng(), route.getOverviewPolyline(), true, 4);//4 meters
           return light.segment != -1;
         }).sorted(Comparator.comparingInt(light -> light.segment))
         //.peek(System.out::println)
@@ -227,19 +227,28 @@ public class Server {
         List<LatLng> polyline = route.getOverviewPolyline();
         int segmentSize = polyline.size() - 1;
         //make list of light coverages for each segment
-        ArrayList<ArrayList<Double[]>> segmentLightCoverages = new ArrayList<ArrayList<Double[]>>(polyline.size()-1);
+        ArrayList<ArrayList<Double[]>> segmentLightCoverages = new ArrayList<>(polyline.size() - 1);
+        for (int i = 0; i < segmentSize; i++){
+          segmentLightCoverages.add(new ArrayList<>(1));
+        }
         for(Light light : lightsToWorkWith) {
-          //intersect each line segment in route, with light
-          for(int i = 0; i < segmentSize; i++)
-          {
-            Double[] times = Rank.intersectTimes(polyline.get(i), polyline.get(i+1), light.getLatLng(), 0.05);
-            segmentLightCoverages.get(i).add(times);
-          }
+//          //intersect each line segment in route, with light
+//          for(int i = 0; i < segmentSize; i++)
+//          {
+//            Double[] times = Rank.intersectTimes(polyline.get(i), polyline.get(i+1), light.getLatLng(), 0.05);
+//            segmentLightCoverages.get(i).add(times);
+//          }
+          ArrayList<Double[]> temp = segmentLightCoverages.get(light.segment);
+          temp.add(Rank.intersectTimes(polyline.get(light.segment),   polyline.get(light.segment+1), light.getLatLng(), 0.000043));// (4/1.1132+4/0.7871)/2*0.00001 degrees
+          temp.add(Rank.intersectTimes(polyline.get(light.segment-1), polyline.get(light.segment),   light.getLatLng(), 0.000043));
+          temp.add(Rank.intersectTimes(polyline.get(light.segment+1), polyline.get(light.segment+2), light.getLatLng(), 0.000043));
+
         }
         for(int i = 0; i < segmentSize; i++) {
           ArrayList<Double[]> temp = Rank.pruneRedundant(segmentLightCoverages.get(i));
-          segmentLightCoverages.remove(i);
-          segmentLightCoverages.add(i,temp);
+//          segmentLightCoverages.remove(i);
+//          segmentLightCoverages.add(i,temp);
+          segmentLightCoverages.set(i, temp);
         }
         ArrayList<Double> lightProportions = new ArrayList<Double>(0);
         for(int i = 0; i < segmentSize; i++) {
