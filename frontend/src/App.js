@@ -28,7 +28,7 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: 'white',
   },
   markerModeBox: {
-    top: '12%',
+    top: '8%',
     left: '83%',
     height: '20%',
     width: '12%',
