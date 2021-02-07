@@ -91,9 +91,10 @@ function App() {
           <List style={{maxHeight: '100%', overflow: 'auto'}} />
         </Paper>
         <Card className={classes.map} elevation={1}>
-            <Map google={this.props.google} />
+          <CardMedia src="https://www.google.com/maps/embed/v1/place?key=API_KEY&q=Space+Needle,Seattle+WA" />
         </Card>
       </Paper>
+      <Map google={this.props.google} />
     </div>
   );
 }
