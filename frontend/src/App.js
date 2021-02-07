@@ -91,6 +91,7 @@ function App(props) {
           <List style={{maxHeight: '100%', overflow: 'auto'}} />
         </Paper>
         <Card className={classes.map} elevation={1}>
+	  <Map google={props.google} />
         </Card>
       </Paper>
     </div>
