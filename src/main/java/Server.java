@@ -1,16 +1,25 @@
 import static spark.Spark.*;
 
+import com.google.gson.Gson;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import io.github.cdimascio.dotenv.Dotenv;
+import model.LightJSON;
 import org.sql2o.Sql2o;
 import org.sql2o.Sql2oException;
 import org.sql2o.quirks.PostgresQuirks;
+import persistence.Sql2oLightDao;
 import spark.Spark;
 import spark.utils.IOUtils;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Properties;
 import static model.SqlSchema.*;
 
@@ -96,6 +105,16 @@ public class Server {
 
       return IOUtils.toString(Spark.class.getResourceAsStream("/index.html"));
     });
+
+//    try {
+//      Reader reader = new BufferedReader(new InputStreamReader(Spark.class.getResourceAsStream("/out.json")));
+//
+//      LightJSON lightJSON = new Gson().fromJson(reader, LightJSON.class);
+//
+//      new Sql2oLightDao(getSql2o()).addBatch(lightJSON.getLightStream());
+//    } catch(Exception e) {
+//      e.printStackTrace();
+//    }
   }
 
 }
