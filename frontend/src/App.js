@@ -64,7 +64,15 @@ function App(props) {
   };
 
   const updateDestination = (event) => {
-    setOrigin(event.target.value);
+    setDestination(event.target.value);
+  }; 
+
+  const getRoute = (start, end) => {
+    fetch('/api/fetch_route?start=' + origin.normalize().replace(/ /g,"+") + '&destination=' + destination.normalize().replace(/ /g,"+")).then(
+      response => {return response.json()}
+    ).then(data => {
+      console.log(JSON.stringify(data));
+    })
   };
 
   return (
@@ -80,12 +88,12 @@ function App(props) {
             </Select>
           </FormControl>
           <form value={origin} onChange={updateOrigin}>
-            <TextField id="standard-basic" label="Origin" />
+            <TextField label="Origin" />
           </form>
           <form value={destination} onChange={updateDestination}>
-            <TextField id="standard-basic" label="Destination" />
+            <TextField label="Destination" />
           </form>
-          <Button variant="contained">Create Routes</Button>
+          <Button variant="contained" onClick={getRoute}>Create Routes</Button>
         </Paper>
         <Paper className={classes.directionsBox} elevation={1}>
           <List style={{maxHeight: '100%', overflow: 'auto'}} />
