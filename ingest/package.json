@@ -1,0 +1,16 @@
+{
+  "name": "ingest",
+  "version": "1.0.0",
+  "description": "ingest",
+  "main": "ingest.js",
+  "dependencies": {
+    "@googlemaps/google-maps-services-js": "^3.1.16",
+    "p-limit": "^3.1.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
