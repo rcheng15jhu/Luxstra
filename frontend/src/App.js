@@ -3,6 +3,7 @@ import React, { useEffect } from "react";
 import { Button, Box, Card, CardMedia, FormControl, InputLabel, List, MenuItem, Paper, Select, TextField, Typography } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 import { Map, Marker, GoogleApiWrapper } from "google-maps-react";
+import logo from './resources/logo.PNG'
 
 const useStyles = makeStyles((theme) => ({
   backgroundDiv: {
@@ -48,6 +49,13 @@ const useStyles = makeStyles((theme) => ({
   routeButton: {
     marginTop: '30px',
   },
+  logoImage: {
+    display: 'block',
+    marginLeft: '38%',
+    width: '50%',
+    paddingTop: '100px',
+  },
+
 }));
 
 function App(props) {
@@ -106,6 +114,11 @@ function App(props) {
           </form>
           <Button className={classes.routeButton} variant="contained">Create Routes</Button>
         </Box>
+
+      <div className={classes.logoImage}>
+        <img src={logo}/>
+      </div>
+
         <Box className={classes.map} elevation={1} boxShadow={2}>
           <Map
             google={props.google}
