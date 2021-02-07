@@ -51,7 +51,7 @@ function App(props) {
   const [destination, setDestination] = React.useState("");
 
   const [parsedLines, setParsedLines] = React.useState(null);
-  const [directions, setDirections] = React.useState(null);
+  const [details, setDetails] = React.useState(null);
 
   const [selected, setSelected] = React.useState(colors[0])
 
@@ -82,15 +82,15 @@ function App(props) {
           temp1.push({color: colors[i], directions: data.routes[i].HTMLDirections, summary: data.routes[i].summary})
         }
         setParsedLines(temp);
-        setDirections(temp1)
+        setDetails(temp1)
       })
   };
 
   const renderRouteSelector = () => {
-    if (parsedLines === null || directions === null) {
+    if (parsedLines === null || details === null) {
       return null
     } else {
-      const colors = directions.map(direction => <MenuItem value={direction.color} key={direction.color}>{direction.color}</MenuItem>)
+      const colors = details.map(direction => <MenuItem value={direction.color} key={direction.color}>{direction.color}</MenuItem>)
       return (
         <FormControl>
           <InputLabel id="route">Route details</InputLabel>
@@ -103,11 +103,15 @@ function App(props) {
   }
 
   const renderRouteDetails = () => {
-    if (directions === null || selected === null) {
+    if (details === null || selected === null) {
       return null
     } else {
+      console.log(details.filter(direction => direction.color === selected)[0].summary)
         return (
-          <div dangerouslySetInnerHTML={{__html: directions.filter(direction => direction.color === selected)[0].directions}} />
+          <div>
+            <div dangerouslySetInnerHTML={{__html: details.filter(direction => direction.color === selected)[0].directions}} />
+            <div dangerouslySetInnerHTML={{__html: details.filter(direction => direction.color === selected)[0].summary}} />
+          </div>
         )
     }
   }
