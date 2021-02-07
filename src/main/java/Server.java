@@ -238,7 +238,8 @@ public class Server {
         }
         for(int i = 0; i < segmentSize; i++) {
           ArrayList<Double[]> temp = Rank.pruneRedundant(segmentLightCoverages.get(i));
-          segmentLightCoverages.get(i) = temp;
+          segmentLightCoverages.remove(i);
+          segmentLightCoverages.add(i,temp);
         }
       }
 
