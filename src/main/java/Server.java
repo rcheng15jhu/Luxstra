@@ -12,6 +12,7 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import io.github.cdimascio.dotenv.Dotenv;
 import model.LightJSON;
+import model.PathLatLngs;
 import org.sql2o.Sql2o;
 import org.sql2o.Sql2oException;
 import org.sql2o.quirks.PostgresQuirks;
@@ -156,13 +157,13 @@ public class Server {
       System.out.println(routes.length);
 
 
-      String latLngs = new Gson().toJson(Arrays.stream(routes)
+      String latLngs = new Gson().toJson(new PathLatLngs(Arrays.stream(routes)
               .map(route -> Arrays.stream(route.legs)
                     .map(leg -> Arrays.stream(leg.steps)
                           .map(step -> step.polyline.decodePath())
                           .toArray()
                     ).toArray()
-              ).toArray());
+              ).toArray()));
 
       return latLngs;
     });
