@@ -4,6 +4,7 @@ import { Button, Box, Card, CardMedia, FormControl, InputLabel, List, MenuItem, 
 import { makeStyles } from "@material-ui/core/styles";
 import logo from './resources/logo.PNG'
 import { GoogleApiWrapper, Map, Marker, Polyline } from "google-maps-react";
+import { BrowserView, MobileView, isMobile } from "react-device-detect";
 
 const useStyles = makeStyles((theme) => ({
   backgroundDiv: {
@@ -39,6 +40,30 @@ const useStyles = makeStyles((theme) => ({
     alignItems: 'center',
     backgroundColor: 'white',
   },
+  mobileSelectionBox: {
+    top: '5%',
+    left: '5%',
+    height: '30%',
+    width: '40%',
+    position: 'absolute',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'white',
+  },
+  mobileMarkerModeBox: {
+    top: '5%',
+    left: '55%',
+    height: '30%',
+    width: '40%',
+    position: 'absolute',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'white',
+  },
   map: {
     top: '40%',
     left: '5%',
@@ -57,11 +82,23 @@ const useStyles = makeStyles((theme) => ({
     width: '50%',
     position: 'absolute',
   },
-  detailsBox: {
+  desktopDetailsBox: {
     top: '5%',
     left: '27.5%',
     height: '30%',
     width: '50%',
+    position: 'absolute',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    backgroundColor: 'white',
+    overflow: 'scroll',
+  },
+  mobileDetailsBox: {
+    top: '100%',
+    left: '0%',
+    height: '30%',
+    width: '100%',
     position: 'absolute',
     display: 'flex',
     flexDirection: 'column',
@@ -204,13 +241,25 @@ function App(props) {
       return null
     } else {
       const directions = details.filter(direction => direction.color === colors[selected])[0].directions.map(direction => <li key={direction} dangerouslySetInnerHTML={{__html: direction}}/>)
-      return (
-        <Paper className={classes.detailsBox} elevation={1}>
-          {renderRouteSelector()}
-          <div dangerouslySetInnerHTML={{ __html: details.filter(direction => direction.color === colors[selected])[0].summary }} />
-          <ul className={classes.directions}>{directions}</ul>
-        </Paper>
-      )
+      if(isMobile) {
+        return (
+            <Paper className={classes.mobileDetailsBox} elevation={1}>
+              {renderRouteSelector()}
+              <div
+                  dangerouslySetInnerHTML={{__html: details.filter(direction => direction.color === colors[selected])[0].summary}}/>
+              <ul className={classes.directions}>{directions}</ul>
+            </Paper>
+        )
+      } else {
+        return (
+            <Paper className={classes.desktopDetailsBox} elevation={1}>
+              {renderRouteSelector()}
+              <div
+                  dangerouslySetInnerHTML={{__html: details.filter(direction => direction.color === colors[selected])[0].summary}}/>
+              <ul className={classes.directions}>{directions}</ul>
+            </Paper>
+        )
+      }
     }
   }
 
@@ -246,16 +295,7 @@ function App(props) {
           }
         </Map>
       </Box>
-      <Box className={classes.markerModeBox} elevation={1} boxShadow={2}>
-        <FormControl>
-          <InputLabel id="Select">Select</InputLabel>
-          <Select value={currentMarkerMode} onChange={updateCurrentMarkerMode}>
-            <MenuItem value={"Origin"}>Origin</MenuItem>
-            <MenuItem value={"Destination"}>Destination</MenuItem>
-          </Select>
-        </FormControl>
-        <Button className={classes.routeButton} onClick={getDirectionsFromMarkers} variant="contained">Create Routes</Button>
-      </Box>
+      <BrowserView>
       <Box className={classes.selectionBox} elevation={1} boxShadow={2}>
         <FormControl>
           <InputLabel id="city">City</InputLabel>
@@ -273,7 +313,46 @@ function App(props) {
         </form>
         <Button className={classes.routeButton} onClick={getDirections} variant="contained">Create Routes</Button>
       </Box>
-
+      <Box className={classes.markerModeBox} elevation={1} boxShadow={2}>
+        <FormControl>
+          <InputLabel id="Select">Select</InputLabel>
+          <Select value={currentMarkerMode} onChange={updateCurrentMarkerMode}>
+            <MenuItem value={"Origin"}>Origin</MenuItem>
+            <MenuItem value={"Destination"}>Destination</MenuItem>
+          </Select>
+        </FormControl>
+        <Button className={classes.routeButton} onClick={getDirectionsFromMarkers} variant="contained">Create Routes</Button>
+      </Box>
+      </BrowserView>
+      <MobileView>
+        <Box className={classes.mobileSelectionBox} elevation={1} boxShadow={2}>
+          <FormControl>
+            <InputLabel id="city">City</InputLabel>
+            <Select value={currentLocale} onChange={updateLocale}>
+              <MenuItem value={"Baltimore"}>Baltimore</MenuItem>
+              <MenuItem value={"Boston"}>Boston</MenuItem>
+              <MenuItem value={"WashingtonDC"}>Washington D.C.</MenuItem>
+            </Select>
+          </FormControl>
+          <form id="origin" value={origin} onChange={updateOrigin}>
+            <TextField label="Origin" />
+          </form>
+          <form id="destination" value={destination} onChange={updateDestination}>
+            <TextField label="Destination" />
+          </form>
+          <Button className={classes.routeButton} onClick={getDirections} variant="contained">Create Routes</Button>
+        </Box>
+        <Box className={classes.mobileMarkerModeBox} elevation={1} boxShadow={2}>
+          <FormControl>
+            <InputLabel id="Select">Select</InputLabel>
+            <Select value={currentMarkerMode} onChange={updateCurrentMarkerMode}>
+              <MenuItem value={"Origin"}>Origin</MenuItem>
+              <MenuItem value={"Destination"}>Destination</MenuItem>
+            </Select>
+          </FormControl>
+          <Button className={classes.routeButton} onClick={getDirectionsFromMarkers} variant="contained">Create Routes</Button>
+        </Box>
+      </MobileView>
       {renderRouteDetails()}
     </div>
   );
