@@ -241,9 +241,18 @@ public class Server {
           segmentLightCoverages.remove(i);
           segmentLightCoverages.add(i,temp);
         }
+        ArrayList<Double> lightProportions = new ArrayList<Double>(0);
+        for(int i = 0; i < segmentSize; i++) {
+          double proportion = 0.0;
+          int numLightSegments = segmentLightCoverages.get(i).size();
+          for(int j = 0; j < numLightSegments; j++) {
+            Double[] lightSegmentInfo = segmentLightCoverages.get(i).get(j);
+            proportion += (lightSegmentInfo[1] - lightSegmentInfo[0]);
+          }
+          lightProportions.add(proportion);
+        }
       }
-
-
+      
       return null;
     });
 
