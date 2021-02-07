@@ -1,6 +1,13 @@
 import static spark.Spark.*;
 
 import com.google.gson.Gson;
+import com.google.maps.DirectionsApi;
+import com.google.maps.GeoApiContext;
+import com.google.maps.model.DirectionsResult;
+import com.google.maps.model.DirectionsRoute;
+import com.google.maps.android.PolyUtil;
+import com.google.maps.model.LatLng;
+import com.google.maps.model.TravelMode;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import io.github.cdimascio.dotenv.Dotenv;
@@ -20,12 +27,16 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 import static model.SqlSchema.*;
 
 public class Server {
 
   private static Sql2o sql2o;
+
+  private static GeoApiContext context;
 
   private static Sql2o getSql2o() {
     if(sql2o == null) {
@@ -77,11 +88,23 @@ public class Server {
     return PORT_NUM;
   }
 
+  public static GeoApiContext getGeoAPIContext() {
+    if(context == null) {
+      Dotenv dotenv = Dotenv.load();
+      context = new GeoApiContext.Builder()
+              .apiKey(dotenv.get("DEV_API_KEY"))
+              .build();
+    }
+    return context;
+  }
+
   public static void main(String[] args) {
     // set port number
     port(getHerokuAssignedPort());
 
     getSql2o();
+
+    getGeoAPIContext();
 
     staticFiles.location("/");
 
@@ -104,6 +127,44 @@ public class Server {
       res.type("text/html");
 
       return IOUtils.toString(Spark.class.getResourceAsStream("/index.html"));
+    });
+
+    get("/api/lights_from_street", (req, res) -> {
+      res.status(200);
+      res.type("application/json");
+
+      String name = req.queryParams("name");
+
+      String results = new Gson().toJson(new Sql2oLightDao(getSql2o()).listFromStreetName(name));
+
+      return results;
+    });
+
+    get("/api/fetch_route", (req, res) -> {
+      res.status(200);
+      res.type("application/json");
+
+      String start = req.queryParams("start");
+      String end = req.queryParams("end");
+
+      DirectionsResult directionsResult = DirectionsApi.getDirections(getGeoAPIContext(), start, end)
+              .alternatives(true)
+              .mode(TravelMode.WALKING)
+              .await();
+      DirectionsRoute[] routes = directionsResult.routes;
+
+      System.out.println(routes.length);
+
+
+      String latLngs = new Gson().toJson(Arrays.stream(routes)
+              .map(route -> Arrays.stream(route.legs)
+                    .map(leg -> Arrays.stream(leg.steps)
+                          .map(step -> step.polyline.decodePath())
+                          .toArray()
+                    ).toArray()
+              ).toArray());
+
+      return latLngs;
     });
 
 //    try {
