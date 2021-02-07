@@ -90,10 +90,8 @@ function App(props) {
     const latlng = { lat: latLng.lat(), lng: latLng.lng() }
     if (currentMarkerMode === "Origin") {
       setOriginMarkerPos(latlng)
-      setOrigin(latlng.lat, latlng.lng)
     } else {
       setDestinationMarkerPos(latlng)
-      setDestination(latlng.lat, latlng.lng)
     }
   }
 
