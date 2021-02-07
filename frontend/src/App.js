@@ -75,6 +75,19 @@ function App(props) {
       )
   };
 
+  const getDirections = () => {
+    fetch('/api/fetch_route_directions?start=' + origin.normalize().replace(/ /g,"+") + '&end=' + destination.normalize().replace(/ /g,"+"))
+        .then(response => response.json())
+        .then(data => {
+          const RouteLines = data.routes.map(route =>
+              <Polyline path={route.overviewPolyline} strokeColor="#000000" key={route.overviewPolyline} />
+          )
+          console.log(data.routes);
+          setParsedLines(RouteLines);
+        }
+      )
+  };
+
   return (
     <div className={classes.backgroundDiv}>
       <Paper className={classes.mainBox} elevation={2}>
