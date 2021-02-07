@@ -48,7 +48,7 @@ public class Sql2oLightDao implements LightDao {
 
   @Override
   public List<Light> listFromStreetName(String street) throws DaoException {
-    return Transaction.execute(sql20, (con) -> {
+    return Transaction.execute(sql2o, (con) -> {
       String sql = "SELECT * FROM Lights WHERE street = :street";
       return con.createQuery(sql)
         .addParameter("street", street)
