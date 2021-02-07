@@ -28,10 +28,10 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: 'white',
   },
   markerModeBox: {
-    top: '8%',
-    left: '83%',
-    height: '20%',
-    width: '12%',
+    top: '5%',
+    left: '80%',
+    height: '30%',
+    width: '15%',
     position: 'absolute',
     display: 'flex',
     flexDirection: 'column',
@@ -47,25 +47,42 @@ const useStyles = makeStyles((theme) => ({
     position: 'absolute',
   },
   routeButton: {
-    marginTop: '30px',
+    marginTop: '20px',
     backgroundColor: "lightblue",
   },
   logoImage: {
     display: 'block',
-    marginLeft: '37.8%',
+    top: '10%',
+    left: '35%',
     width: '50%',
-    paddingTop: '100px',
+    position: 'absolute',
   },
   detailsBox: {
     top: '5%',
-    left: '50%',
+    left: '27.5%',
+    height: '30%',
+    width: '50%',
     position: 'absolute',
     display: 'flex',
     flexDirection: 'column',
-    justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'white',
-  }
+    overflow: 'scroll',
+  },
+  selectRoute: {
+    top: '15%',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'absolute'
+  },
+  directions: {
+    top: '35%',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'absolute'
+  },
 
 }));
 
@@ -138,7 +155,7 @@ function App(props) {
     } else {
       const colors = details.map(direction => <MenuItem value={direction.color} key={direction.color}>{direction.color}</MenuItem>)
       return (
-        <FormControl>
+        <FormControl className={classes.selectRoute}>
           <InputLabel id="route">Route</InputLabel>
           <Select value={selected} onChange={updateSelected}>
             {colors}
@@ -154,11 +171,11 @@ function App(props) {
     } else {
       const directions = details.filter(direction => direction.color === selected)[0].directions.map(direction => <li dangerouslySetInnerHTML={{ __html: direction }}></li>)
       return (
-        <Box className={classes.detailsBox} elevation={1} boxShadow={2}>
+        <Paper className={classes.detailsBox} elevation={1}>
           {renderRouteSelector()}
-          <lu>{directions}</lu>
           <div dangerouslySetInnerHTML={{ __html: details.filter(direction => direction.color === selected)[0].summary }} />
-        </Box>
+          <ul className={classes.directions}>{directions}</ul>
+        </Paper>
       )
     }
   }
