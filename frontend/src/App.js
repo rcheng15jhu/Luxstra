@@ -61,7 +61,7 @@ function App(props) {
   }; 
 
   const getRoute = (start, end) => {
-    fetch('/api/fetch_route?start=' + origin.normalize().replace(/ /g,"+") + '&destination=' + destination.normalize().replace(/ /g,"+")).then(
+    fetch('/api/fetch_route_coords?start=' + origin.normalize().replace(/ /g,"+") + '&end=' + destination.normalize().replace(/ /g,"+")).then(
       response => {return response.json()}
     ).then(data => {
       console.log(JSON.stringify(data));

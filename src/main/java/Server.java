@@ -12,7 +12,6 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import io.github.cdimascio.dotenv.Dotenv;
 import model.LightJSON;
-import model.PathDirections;
 import model.PathLatLngs;
 import model.RouteDirections;
 import model.Routes;
@@ -34,6 +33,8 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import java.util.stream.Collectors;
+
 import static model.SqlSchema.*;
 
 public class Server {
@@ -160,13 +161,13 @@ public class Server {
       System.out.println(routes.length);
 
 
-      String latLngs = new Gson().toJson(new PathLatLngs((LatLng[]) Arrays.stream(routes)
+      String latLngs = new Gson().toJson(new PathLatLngs(Arrays.stream(routes)
               .map(route -> Arrays.stream(route.legs)
                     .map(leg -> Arrays.stream(leg.steps)
                           .map(step -> step.polyline.decodePath())
-                          .toArray()
-                    ).toArray()
-              ).toArray()));
+                          .collect(Collectors.toList())
+                    ).collect(Collectors.toList())
+              ).collect(Collectors.toList())));
 
       return latLngs;
     });
