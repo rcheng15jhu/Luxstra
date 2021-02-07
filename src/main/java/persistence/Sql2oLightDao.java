@@ -24,8 +24,8 @@ public class Sql2oLightDao implements LightDao {
   @Override
   public List<Integer> addBatch(Stream<Light> ls) throws DaoException {
     return Transaction.execute(sql2o, (con) -> {
-      String query = "INSERT INTO Lights (lat, lng, street, street_number)"
-              + "VALUES (:lat, :lng, :street, :street_number)";
+      String query = "INSERT INTO Lights (latitude, longitude, street, street_number)"
+              + "VALUES (:latitude, :longitude, :street, :street_number)";
 
       Query q = con.createQuery(query, true);
 

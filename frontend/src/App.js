@@ -115,6 +115,15 @@ function App(props) {
     setDestination(event.target.value);
   };
 
+  const getAnalysis = () => {
+    fetch('/api/analyse_paths?start=' + origin.normalize().replace(/ /g,"+") + '&end=' + destination.normalize().replace(/ /g,"+")).then(
+        response => {return response.json()}
+    ).then(data => {
+      console.log(JSON.stringify(data));
+      //document.getElementById("mapLine").path = {data};
+    })
+  };
+
   const updateCurrentMarkerMode = (event) => {
     console.log(event.target.value)
     setCurrentMarkerMode(event.target.value)
@@ -134,37 +143,30 @@ function App(props) {
     setSelected(event.target.value)
   }
 
+  const injestData = data => {
+    let temp = [];
+    let temp1 = [];
+    for (let i = 0; i < data.routes.length; i++) {
+      temp.push(<Polyline path={data.routes[i].overviewPolyline} strokeColor={colors[i]} key={colors[i]} />);
+      temp1.push({ color: colors[i], directions: data.routes[i].HTMLDirections, summary: data.routes[i].summary })
+    }
+    setParsedLines(temp);
+    setDetails(temp1)
+  };
+
   const getDirections = () => {
-    fetch('/api/fetch_route_directions?start=' + origin.normalize().replace(/ /g, "+") + '&end=' + destination.normalize().replace(/ /g, "+"))
+    let promise = fetch('/api/analyse_paths?start=' + origin.normalize().replace(/ /g, "+") + '&end=' + destination.normalize().replace(/ /g, "+"))
       .then(response => response.json())
-      .then(data => {
-        let temp = []
-        let temp1 = []
-        for (let i = 0; i < data.routes.length; i++) {
-          temp.push(<Polyline path={data.routes[i].overviewPolyline} strokeColor={colors[i]} key={colors[i]} />);
-          temp1.push({ color: colors[i], directions: data.routes[i].HTMLDirections, summary: data.routes[i].summary })
-        }
-        setParsedLines(temp);
-        setDetails(temp1)
-      })
+      .then(injestData);
   };
 
   const getDirectionsFromMarkers =() => {
-    const origin = originMarkerPos.lat + ',' + originMarkerPos.lng
-    const destination = destinationMarkerPos.lat + ',' + destinationMarkerPos.lng
-    fetch('/api/fetch_route_directions?start=' + origin + '&end=' + destination)
+    const origin = originMarkerPos.lat + ',' + originMarkerPos.lng;
+    const destination = destinationMarkerPos.lat + ',' + destinationMarkerPos.lng;
+    fetch('/api/analyse_paths?start=' + origin + '&end=' + destination)
     .then(response => response.json())
-    .then(data => {
-      let temp = []
-      let temp1 = []
-      for (let i = 0; i < data.routes.length; i++) {
-        temp.push(<Polyline path={data.routes[i].overviewPolyline} strokeColor={colors[i]} key={colors[i]} />);
-        temp1.push({ color: colors[i], directions: data.routes[i].HTMLDirections, summary: data.routes[i].summary })
-      }
-      setParsedLines(temp);
-      setDetails(temp1)
-    })
-  }
+    .then(injestData);
+  };
 
   const renderRouteSelector = () => {
     if (parsedLines === null || details === null) {
@@ -186,7 +188,7 @@ function App(props) {
     if (details === null || selected === null) {
       return null
     } else {
-      const directions = details.filter(direction => direction.color === selected)[0].directions.map(direction => <li key={direction} dangerouslySetInnerHTML={{ __html: direction }}></li>)
+      const directions = details.filter(direction => direction.color === selected)[0].directions.map(direction => <li key={direction} dangerouslySetInnerHTML={{__html: direction}}/>)
       return (
         <Paper className={classes.detailsBox} elevation={1}>
           {renderRouteSelector()}
@@ -201,7 +203,7 @@ function App(props) {
     <div className={classes.backgroundDiv}>
       {parsedLines === null ?
         <div className={classes.logoImage}>
-          <img src={logo} />
+          <img src={logo}  alt="logo"/>
         </div>
         :
         null
@@ -255,7 +257,6 @@ function App(props) {
       </Box>
 
       {renderRouteDetails()}
-
     </div>
   );
 }
