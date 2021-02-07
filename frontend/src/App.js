@@ -190,7 +190,6 @@ function App(props) {
       return (
         <Paper className={classes.detailsBox} elevation={1}>
           {renderRouteSelector()}
-          <ul>{directions}</ul>
           <div dangerouslySetInnerHTML={{ __html: details.filter(direction => direction.color === selected)[0].summary }} />
           <ul className={classes.directions}>{directions}</ul>
         </Paper>
