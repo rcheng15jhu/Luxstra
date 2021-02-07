@@ -1,9 +1,11 @@
 package model;
 
-public class Routes {
-  RouteDirections[] routes;
+import java.util.List;
 
-  public Routes(RouteDirections[] routes) {
+public class Routes {
+  List<RouteDirections> routes;
+
+  public Routes(List<RouteDirections> routes) {
     this.routes = routes;
   }
 }

@@ -188,15 +188,15 @@ public class Server {
       System.out.println(routes.length);
 
 
-      String directions = new Gson().toJson(new Routes((RouteDirections[]) Arrays.stream(routes)
+      String directions = new Gson().toJson(new Routes(Arrays.stream(routes)
               .map(route -> new RouteDirections(
                       route.overviewPolyline.getEncodedPath(),
                       Arrays.stream(route.legs)
                             .flatMap(leg -> Arrays.stream(leg.steps)
                                     .map(step -> step.htmlInstructions)
-                            ).toArray()
+                            ).collect(Collectors.toList())
                 )
-              ).toArray()
+              ).collect(Collectors.toList())
       ));
 
       return directions;
