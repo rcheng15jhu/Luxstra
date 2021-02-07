@@ -1,8 +1,9 @@
 import React, { useEffect } from "react";
 
-import { Button, Card, CardMedia, FormControl, InputLabel, List, MenuItem, Paper, Select, TextField, Typography } from "@material-ui/core";
+import { Button, Box, Card, CardMedia, FormControl, InputLabel, List, MenuItem, Paper, Select, TextField, Typography } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 import { Map, Marker, GoogleApiWrapper } from "google-maps-react";
+import logo from './resources/logo.PNG'
 
 const useStyles = makeStyles((theme) => ({
   backgroundDiv: {
@@ -11,15 +12,8 @@ const useStyles = makeStyles((theme) => ({
     top: '0px',
     left: '0px',
     position: 'fixed',
-    backgroundColor: '#998866',
-  },
-  mainBox: {
-    height: '90%',
-    width: '90%',
-    top: '5%',
-    left: '4%',
-    position: 'fixed',
-    backgroundColor: '#bbaa88',
+    backgroundColor: "#FBFBFA",
+    backgroundSize: 'cover',
   },
   selectionBox: {
     top: '5%',
@@ -31,13 +25,19 @@ const useStyles = makeStyles((theme) => ({
     flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: 'white',
   },
-  directionsBox: {
-    top: '5%',
-    left: '30%',
-    height: '30%',
-    width: '65%',
+  markerModeBox: {
+    top: '15%',
+    left: '85%',
+    height: '10%',
+    width: '10%',
     position: 'absolute',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'white',
   },
   map: {
     top: '40%',
@@ -46,14 +46,27 @@ const useStyles = makeStyles((theme) => ({
     width: '90%',
     position: 'absolute',
   },
+  routeButton: {
+    marginTop: '30px',
+  },
+  logoImage: {
+    display: 'block',
+    marginLeft: '39%',
+    width: '50%',
+    paddingTop: '100px',
+  },
+
 }));
 
 function App(props) {
   const classes = useStyles();
 
   const [currentLocale, setLocale] = React.useState("Baltimore");
+  const [currentMarkerMode, setCurrentMarkerMode] = React.useState("Origin")
   const [origin, setOrigin] = React.useState("");
   const [destination, setDestination] = React.useState("");
+  const [originMarkerPos, setOriginMarkerPos] = React.useState(null);
+  const [destinationMarkerPos, setDestinationMarkerPos] = React.useState(null);
 
   const updateLocale = (event) => {
     setLocale(event.target.value);
@@ -64,13 +77,27 @@ function App(props) {
   };
 
   const updateDestination = (event) => {
-    setOrigin(event.target.value);
+    setDestination(event.target.value);
   };
+
+  const updateCurrentMarkerMode = (event) => {
+    console.log(event.target.value)
+    setCurrentMarkerMode(event.target.value)
+  }
+
+  const handleMarkerOnClick = (t, map, coord) => {
+    const { latLng } = coord;
+    const latlng = { lat: latLng.lat(), lng: latLng.lng() }
+    if (currentMarkerMode === "Origin") {
+      setOriginMarkerPos(latlng)
+    } else {
+      setDestinationMarkerPos(latlng)
+    }
+  }
 
   return (
     <div className={classes.backgroundDiv}>
-      <Paper className={classes.mainBox} elevation={2}>
-        <Paper className={classes.selectionBox} elevation={1}>
+        <Box className={classes.selectionBox} elevation={1} boxShadow={2}>
           <FormControl>
             <InputLabel id="city">City</InputLabel>
             <Select value={currentLocale} onChange={updateLocale}>
@@ -85,19 +112,43 @@ function App(props) {
           <form value={destination} onChange={updateDestination}>
             <TextField id="standard-basic" label="Destination" />
           </form>
-          <Button variant="contained">Create Routes</Button>
-        </Paper>
-        <Paper className={classes.directionsBox} elevation={1}>
-          <List style={{maxHeight: '100%', overflow: 'auto'}} />
-        </Paper>
-        <Card className={classes.map} elevation={1}>
-	  <Map google={props.google} />
-        </Card>
-      </Paper>
+          <Button className={classes.routeButton} variant="contained">Create Routes</Button>
+        </Box>
+
+      <div className={classes.logoImage}>
+        <img src={logo}/>
+      </div>
+
+        <Box className={classes.map} elevation={1} boxShadow={2}>
+          <Map
+            google={props.google}
+            onClick={handleMarkerOnClick}
+          >
+            {originMarkerPos === null ? null :
+              <Marker
+                position={originMarkerPos}
+              />
+            }
+            {destinationMarkerPos === null ? null :
+              <Marker
+                position={destinationMarkerPos}
+              />
+            }
+          </Map>
+        </Box>
+        <Box className={classes.markerModeBox} elevation={1} boxShadow={2}>
+          <FormControl>
+            <InputLabel id="Select">Select</InputLabel>
+            <Select value={currentMarkerMode} onChange={updateCurrentMarkerMode}>
+              <MenuItem value={"Origin"}>Origin</MenuItem>
+              <MenuItem value={"Destination"}>Destination</MenuItem>
+            </Select>
+          </FormControl>
+        </Box>
     </div>
   );
 }
 
 export default GoogleApiWrapper({
-  apiKey: (""),
+  apiKey: ("AIzaSyBA1uVzpiZDnx0iG0qC_ZU1m1CpThmNWf4"),
 })(App);
