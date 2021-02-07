@@ -47,6 +47,8 @@ function App(props) {
   const [currentLocale, setLocale] = React.useState("Baltimore");
   const [origin, setOrigin] = React.useState("");
   const [destination, setDestination] = React.useState("");
+  
+  const parsedLines = [];
 
   const updateLocale = (event) => {
     setLocale(event.target.value);
@@ -62,11 +64,15 @@ function App(props) {
 
   const getRoute = (start, end) => {
     fetch('/api/fetch_route_coords?start=' + origin.normalize().replace(/ /g,"+") + '&end=' + destination.normalize().replace(/ /g,"+")).then(
-      response => {return response.json()}
-    ).then(data => {
-      console.log(JSON.stringify(data));
-      document.getElementById("mapLine").path = {data};
-    })
+      response => {return response.json();}
+    ).then(
+      data => {
+        for(let i = 0; i < data.coords.length; i++)
+        {
+          parsedLines.push(<Polyline path={data.coords[i].flat(2)} strokeColor="#000000"/>);
+        }
+      }
+    )
   };
 
   return (
@@ -81,17 +87,17 @@ function App(props) {
               <MenuItem value={"WashingtonDC"}>Washington D.C.</MenuItem>
             </Select>
           </FormControl>
-          <form value={origin} onChange={updateOrigin}>
+          <form id="origin" value={origin} onChange={updateOrigin}>
             <TextField label="Origin" />
           </form>
-          <form value={destination} onChange={updateDestination}>
+          <form id="destination" value={destination} onChange={updateDestination}>
             <TextField label="Destination" />
           </form>
           <Button variant="contained" onClick={getRoute}>Create Routes</Button>
         </Paper>
         <Card className={classes.map} elevation={1}>
 	  <Map google={props.google} initialCenter={{lat: 39.289, lng: -76.612}} id="map">
-            <Polyline id="mapLine" strokeColor="#FFFF00" strokeOpacity={0.8} strokeWeight={2}/>
+            {parsedLines}
           </Map>
         </Card>
       </Paper>
@@ -100,5 +106,5 @@ function App(props) {
 }
 
 export default GoogleApiWrapper({
-  apiKey: (""),
+  apiKey: ("AIzaSyBA1uVzpiZDnx0iG0qC_ZU1m1CpThmNWf4"),
 })(App);
