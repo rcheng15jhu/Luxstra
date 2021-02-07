@@ -32,12 +32,16 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  directionsBox: {
-    top: '5%',
-    left: '30%',
-    height: '30%',
-    width: '65%',
+  markerModeBox: {
+    top: '15%',
+    left: '85%',
+    height: '10%',
+    width: '10%',
     position: 'absolute',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   map: {
     top: '40%',
@@ -87,17 +91,30 @@ function App(props) {
           </form>
           <Button variant="contained">Create Routes</Button>
         </Paper>
-        <Paper className={classes.directionsBox} elevation={1}>
-          <List style={{maxHeight: '100%', overflow: 'auto'}} />
-        </Paper>
         <Card className={classes.map} elevation={1}>
-	  <Map google={props.google} />
+          <Map
+            google={props.google}
+            onClick={(t, map, coord) => {
+              const { latLng } = coord;
+              const lat = latLng.lat();
+              const lng = latLng.lng();
+            }}
+          />
         </Card>
+        <Paper className={classes.markerModeBox} elevation={1}>
+          <FormControl>
+              <InputLabel id="Select">Select</InputLabel>
+              <Select value={""} onChange={() => {}}>
+                <MenuItem value={"Origin"}>Origin</MenuItem>
+                <MenuItem value={"Destination"}>Destination</MenuItem>
+              </Select>
+            </FormControl>
+        </Paper>
       </Paper>
     </div>
   );
 }
 
 export default GoogleApiWrapper({
-  apiKey: (""),
+  apiKey: ("AIzaSyBA1uVzpiZDnx0iG0qC_ZU1m1CpThmNWf4"),
 })(App);
